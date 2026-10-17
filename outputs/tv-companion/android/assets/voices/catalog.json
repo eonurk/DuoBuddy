@@ -1,0 +1,47 @@
+[
+  {
+    "id": "en_US-lessac-medium",
+    "label": "Lessac Medium",
+    "description": "Balanced quality",
+    "sampleRate": 22050,
+    "bytes": 63201425,
+    "sha256": "ea793a648ce0370665f99fbf891eae3b3a973565c72b08534bb5b2c04e8f2332",
+    "revision": "83f7470750b36549037551ef7007fa3b4b8697e0",
+    "url": "https://huggingface.co/csukuangfj/vits-piper-en_US-lessac-medium/resolve/83f7470750b36549037551ef7007fa3b4b8697e0/en_US-lessac-medium.onnx?download=true",
+    "metadata": {
+      "tokens.txt": "87c8ef66eae5473ed0cc0366b3964c736ca6c5f676c979522ea31234e47430b9",
+      "MODEL_CARD": "ce49eb457742208166d399a40cdec2c7fa9db77960930031564ab56f12882645",
+      "en_US-lessac-medium.onnx.json": "efe19c417bed055f2d69908248c6ba650fa135bc868b0e6abb3da181dab690a0"
+    }
+  },
+  {
+    "id": "en_US-amy-medium",
+    "label": "Amy Medium",
+    "description": "Higher-quality Amy",
+    "sampleRate": 22050,
+    "bytes": 63201425,
+    "sha256": "fbaa8e36d8f26fe6f3ebb65cab461e629d8b37a5b7c5fb78fb64317db73e1c25",
+    "revision": "79936839cc9409b1a752a45c629fe21639e1c1b2",
+    "url": "https://huggingface.co/csukuangfj/vits-piper-en_US-amy-medium/resolve/79936839cc9409b1a752a45c629fe21639e1c1b2/en_US-amy-medium.onnx?download=true",
+    "metadata": {
+      "tokens.txt": "87c8ef66eae5473ed0cc0366b3964c736ca6c5f676c979522ea31234e47430b9",
+      "MODEL_CARD": "9c50e04cc298ca7f04f5e5435007be028334338a2c857894a3e496dbf04b25bb",
+      "en_US-amy-medium.onnx.json": "95a23eb4d42909d38df73bb9ac7f45f597dbfcde2d1bf9526fdeaf5466977d77"
+    }
+  },
+  {
+    "id": "en_US-lessac-high",
+    "label": "Lessac High",
+    "description": "Higher quality \u00b7 try on faster TVs",
+    "sampleRate": 22050,
+    "bytes": 113895332,
+    "sha256": "1315b0b3746e9ff52f8ccc88d3d9eaa6c289001fc58951ed88c0fb3a0befe635",
+    "revision": "a3cffbe82b4df3b9edefa73189f4443ed638d9a1",
+    "url": "https://huggingface.co/csukuangfj/vits-piper-en_US-lessac-high/resolve/a3cffbe82b4df3b9edefa73189f4443ed638d9a1/en_US-lessac-high.onnx?download=true",
+    "metadata": {
+      "tokens.txt": "87c8ef66eae5473ed0cc0366b3964c736ca6c5f676c979522ea31234e47430b9",
+      "MODEL_CARD": "7671826d947a0ffc11dd76af0bd890d93e956b00358696ad71348f21aa827100",
+      "en_US-lessac-high.onnx.json": "db42b97d9859f257bc1561b8ed980e7fb2398402050a74ddd6cbec931a92412f"
+    }
+  }
+]

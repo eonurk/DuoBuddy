@@ -9,13 +9,14 @@ android_jar="$tool_root/android-9/android.jar"
 android_build="$tool_root/android-15"
 rm -rf "$build_root/classes" "$build_root/dex"
 mkdir -p "$build_root/classes" "$build_root/dex"
-"$jdk_root/bin/javac" -source 8 -target 8 -classpath "$android_jar:$tool_root/androidsvg/classes.jar" -d "$build_root/classes" "$source_root"/android/src/family/tv/companion/*.java
+python3 "$source_root/bundle-piper.py" --prepare
+kotlin_jar="$task_root/work/piper-runtime/kotlin-stdlib-2.0.21.jar"
+"$jdk_root/bin/javac" -source 8 -target 8 -classpath "$android_jar:$tool_root/androidsvg/classes.jar:$kotlin_jar" -d "$build_root/classes" "$source_root"/android/src/family/tv/companion/*.java
 "$jdk_root/bin/jar" cf "$build_root/classes.jar" -C "$build_root/classes" .
-"$jdk_root/bin/java" -cp "$android_build/lib/d8.jar" com.android.tools.r8.D8 --release --min-api 26 --lib "$android_jar" --output "$build_root/dex" "$build_root/classes.jar" "$tool_root/androidsvg/classes.jar"
+"$jdk_root/bin/java" -cp "$android_build/lib/d8.jar" com.android.tools.r8.D8 --release --min-api 26 --lib "$android_jar" --lib "$kotlin_jar" --output "$build_root/dex" "$build_root/classes.jar" "$tool_root/androidsvg/classes.jar"
 "$android_build/aapt2" compile --dir "$source_root/android/res" -o "$build_root/resources.zip"
 "$android_build/aapt2" link -I "$android_jar" --manifest "$source_root/android/AndroidManifest.xml" -A "$source_root/android/assets" -o "$build_root/resources.apk" "$build_root/resources.zip"
-cp "$build_root/resources.apk" "$build_root/unsigned.apk"
-(cd "$build_root/dex" && /usr/bin/zip -q "$build_root/unsigned.apk" classes.dex)
+python3 "$source_root/bundle-piper.py"
 "$android_build/zipalign" -f 4 "$build_root/unsigned.apk" "$build_root/aligned.apk"
 if [ ! -f "$build_root/companion.keystore" ]; then
   "$jdk_root/bin/keytool" -genkeypair -keystore "$build_root/companion.keystore" -alias companion -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname 'CN=Local TV Companion'

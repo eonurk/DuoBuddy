@@ -1,0 +1,355 @@
+t=0.498
+Applications Memory Usage (in Kilobytes):
+Uptime: 11690194 Realtime: 39010793
+
+** MEMINFO in pid 7263 [com.k2fsa.sherpa.onnx.tts.engine] **
+                   Pss  Private  Private  SwapPss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------
+  Native Heap    81347    81332        0       22    90752    87185     3566
+  Dalvik Heap     3773     3716        0       13     2948     1428     1520
+ Dalvik Other      368      368        0        0                           
+        Stack       36       36        0        0                           
+       Ashmem        0        0        0        0                           
+    Other dev       12        0       12        0                           
+     .so mmap    16089      364    14608        3                           
+    .apk mmap     2098        0     1028        0                           
+    .dex mmap     9761        4     8756        0                           
+    .oat mmap      575        0        0        0                           
+    .art mmap     1200      600      104        1                           
+   Other mmap       32        4       12        0                           
+      Unknown      546      544        0        0                           
+        TOTAL   115876    86968    24520       39    93700    88613     5086
+ 
+ App Summary
+                       Pss(KB)
+                        ------
+           Java Heap:     4420
+         Native Heap:    81332
+                Code:    24760
+               Stack:       36
+            Graphics:        0
+       Private Other:      940
+              System:     4388
+ 
+               TOTAL:   115876       TOTAL SWAP PSS:       39
+ 
+ Objects
+               Views:        0         ViewRootImpl:        0
+         AppContexts:        3           Activities:        0
+              Assets:        4        AssetManagers:        0
+       Local Binders:        5        Proxy Binders:       25
+       Parcel memory:        2         Parcel count:       11
+    Death Recipients:        1      OpenSSL Sockets:        0
+            WebViews:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 
+
+
+t=1.35
+Applications Memory Usage (in Kilobytes):
+Uptime: 11691047 Realtime: 39011646
+
+** MEMINFO in pid 7263 [com.k2fsa.sherpa.onnx.tts.engine] **
+                   Pss  Private  Private  SwapPss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------
+  Native Heap    92999    92984        0       22   103040    99876     3163
+  Dalvik Heap     1637     1580        0       13     2946     1410     1536
+ Dalvik Other      364      364        0        0                           
+        Stack       36       36        0        0                           
+       Ashmem        0        0        0        0                           
+    Other dev       12        0       12        0                           
+     .so mmap    16089      364    14608        3                           
+    .apk mmap     2098        0     1028        0                           
+    .dex mmap     9761        4     8756        0                           
+    .oat mmap      575        0        0        0                           
+    .art mmap     1200      600      104        1                           
+   Other mmap       32        4       12        0                           
+      Unknown      546      544        0        0                           
+        TOTAL   125388    96480    24520       39   105986   101286     4699
+ 
+ App Summary
+                       Pss(KB)
+                        ------
+           Java Heap:     2284
+         Native Heap:    92984
+                Code:    24760
+               Stack:       36
+            Graphics:        0
+       Private Other:      936
+              System:     4388
+ 
+               TOTAL:   125388       TOTAL SWAP PSS:       39
+ 
+ Objects
+               Views:        0         ViewRootImpl:        0
+         AppContexts:        3           Activities:        0
+              Assets:        4        AssetManagers:        0
+       Local Binders:        5        Proxy Binders:       25
+       Parcel memory:        2         Parcel count:       11
+    Death Recipients:        1      OpenSSL Sockets:        0
+            WebViews:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 
+
+
+t=2.2
+Applications Memory Usage (in Kilobytes):
+Uptime: 11691889 Realtime: 39012488
+
+** MEMINFO in pid 7263 [com.k2fsa.sherpa.onnx.tts.engine] **
+                   Pss  Private  Private  SwapPss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------
+  Native Heap    92951    92936        0       22   115328   109926     5401
+  Dalvik Heap     1577     1520        0       13     2946     1410     1536
+ Dalvik Other      356      356        0        0                           
+        Stack       36       36        0        0                           
+       Ashmem        0        0        0        0                           
+    Other dev       12        0       12        0                           
+     .so mmap    16089      364    14608        3                           
+    .apk mmap     2098        0     1028        0                           
+    .dex mmap     9761        4     8756        0                           
+    .oat mmap      575        0        0        0                           
+    .art mmap     1200      600      104        1                           
+   Other mmap       32        4       12        0                           
+      Unknown      546      544        0        0                           
+        TOTAL   125272    96364    24520       39   118274   111336     6937
+ 
+ App Summary
+                       Pss(KB)
+                        ------
+           Java Heap:     2224
+         Native Heap:    92936
+                Code:    24760
+               Stack:       36
+            Graphics:        0
+       Private Other:      928
+              System:     4388
+ 
+               TOTAL:   125272       TOTAL SWAP PSS:       39
+ 
+ Objects
+               Views:        0         ViewRootImpl:        0
+         AppContexts:        3           Activities:        0
+              Assets:        4        AssetManagers:        0
+       Local Binders:        5        Proxy Binders:       25
+       Parcel memory:        2         Parcel count:       11
+    Death Recipients:        1      OpenSSL Sockets:        0
+            WebViews:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 
+
+
+t=3.059
+Applications Memory Usage (in Kilobytes):
+Uptime: 11692754 Realtime: 39013353
+
+** MEMINFO in pid 7263 [com.k2fsa.sherpa.onnx.tts.engine] **
+                   Pss  Private  Private  SwapPss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------
+  Native Heap   106011   105996        0       22   125056   119697     5358
+  Dalvik Heap     1769     1712        0       13     2946     1410     1536
+ Dalvik Other      364      364        0        0                           
+        Stack       36       36        0        0                           
+       Ashmem        0        0        0        0                           
+    Other dev       12        0       12        0                           
+     .so mmap    16089      364    14608        3                           
+    .apk mmap     2098        0     1028        0                           
+    .dex mmap     9761        4     8756        0                           
+    .oat mmap      575        0        0        0                           
+    .art mmap     1200      600      104        1                           
+   Other mmap       32        4       12        0                           
+      Unknown      546      544        0        0                           
+        TOTAL   138532   109624    24520       39   128002   121107     6894
+ 
+ App Summary
+                       Pss(KB)
+                        ------
+           Java Heap:     2416
+         Native Heap:   105996
+                Code:    24760
+               Stack:       36
+            Graphics:        0
+       Private Other:      936
+              System:     4388
+ 
+               TOTAL:   138532       TOTAL SWAP PSS:       39
+ 
+ Objects
+               Views:        0         ViewRootImpl:        0
+         AppContexts:        3           Activities:        0
+              Assets:        4        AssetManagers:        0
+       Local Binders:        5        Proxy Binders:       25
+       Parcel memory:        2         Parcel count:       11
+    Death Recipients:        1      OpenSSL Sockets:        0
+            WebViews:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 
+
+
+t=4.031
+Applications Memory Usage (in Kilobytes):
+Uptime: 11693661 Realtime: 39014260
+
+** MEMINFO in pid 7263 [com.k2fsa.sherpa.onnx.tts.engine] **
+                   Pss  Private  Private  SwapPss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------
+  Native Heap   108383   108368        0       22   128640   124490     4149
+  Dalvik Heap     1577     1520        0       13     2962     1426     1536
+ Dalvik Other      360      360        0        0                           
+        Stack       36       36        0        0                           
+       Ashmem        0        0        0        0                           
+    Other dev       12        0       12        0                           
+     .so mmap    16085      364    14608        3                           
+    .apk mmap     2098        0     1028        0                           
+    .dex mmap     9761        4     8756        0                           
+    .oat mmap      575        0        0        0                           
+    .art mmap     1200      600      104        1                           
+   Other mmap       32        4       12        0                           
+      Unknown      546      544        0        0                           
+        TOTAL   140704   111800    24520       39   131602   125916     5685
+ 
+ App Summary
+                       Pss(KB)
+                        ------
+           Java Heap:     2224
+         Native Heap:   108368
+                Code:    24760
+               Stack:       36
+            Graphics:        0
+       Private Other:      932
+              System:     4384
+ 
+               TOTAL:   140704       TOTAL SWAP PSS:       39
+ 
+ Objects
+               Views:        0         ViewRootImpl:        0
+         AppContexts:        3           Activities:        0
+              Assets:        4        AssetManagers:        0
+       Local Binders:        5        Proxy Binders:       25
+       Parcel memory:        2         Parcel count:       11
+    Death Recipients:        1      OpenSSL Sockets:        0
+            WebViews:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 
+
+
+t=4.982
+Applications Memory Usage (in Kilobytes):
+Uptime: 11694618 Realtime: 39015216
+
+** MEMINFO in pid 7263 [com.k2fsa.sherpa.onnx.tts.engine] **
+                   Pss  Private  Private  SwapPss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------
+  Native Heap   124243   124228        0       22   145536   141258     4277
+  Dalvik Heap     1577     1520        0       13     2962     1426     1536
+ Dalvik Other      360      360        0        0                           
+        Stack       36       36        0        0                           
+       Ashmem        0        0        0        0                           
+    Other dev       12        0       12        0                           
+     .so mmap    15953      364    14544        3                           
+    .apk mmap     2098        0     1028        0                           
+    .dex mmap     9755        4     8756        0                           
+    .oat mmap      573        0        0        0                           
+    .art mmap     1195      600      100        1                           
+   Other mmap       32        4       12        0                           
+      Unknown      546      544        0        0                           
+        TOTAL   156419   127660    24452       39   148498   142684     5813
+ 
+ App Summary
+                       Pss(KB)
+                        ------
+           Java Heap:     2220
+         Native Heap:   124228
+                Code:    24696
+               Stack:       36
+            Graphics:        0
+       Private Other:      932
+              System:     4307
+ 
+               TOTAL:   156419       TOTAL SWAP PSS:       39
+ 
+ Objects
+               Views:        0         ViewRootImpl:        0
+         AppContexts:        3           Activities:        0
+              Assets:        4        AssetManagers:        0
+       Local Binders:        5        Proxy Binders:       25
+       Parcel memory:        2         Parcel count:       11
+    Death Recipients:        1      OpenSSL Sockets:        0
+            WebViews:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 
+
+
+t=5.944
+Applications Memory Usage (in Kilobytes):
+Uptime: 11695541 Realtime: 39016140
+
+** MEMINFO in pid 7263 [com.k2fsa.sherpa.onnx.tts.engine] **
+                   Pss  Private  Private  SwapPss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------
+  Native Heap   142379   142364        0       22   154240   150602     3637
+  Dalvik Heap     1577     1520        0       13     2946     1410     1536
+ Dalvik Other      360      360        0        0                           
+        Stack       36       36        0        0                           
+       Ashmem        0        0        0        0                           
+    Other dev       12        0       12        0                           
+     .so mmap    16087      364    14608        3                           
+    .apk mmap     2098        0     1028        0                           
+    .dex mmap     9761        4     8756        0                           
+    .oat mmap      575        0        0        0                           
+    .art mmap     1200      600      104        1                           
+   Other mmap       32        4       12        0                           
+      Unknown      546      544        0        0                           
+        TOTAL   174702   145796    24520       39   157186   152012     5173
+ 
+ App Summary
+                       Pss(KB)
+                        ------
+           Java Heap:     2224
+         Native Heap:   142364
+                Code:    24760
+               Stack:       36
+            Graphics:        0
+       Private Other:      932
+              System:     4386
+ 
+               TOTAL:   174702       TOTAL SWAP PSS:       39
+ 
+ Objects
+               Views:        0         ViewRootImpl:        0
+         AppContexts:        3           Activities:        0
+              Assets:        4        AssetManagers:        0
+       Local Binders:        5        Proxy Binders:       25
+       Parcel memory:        2         Parcel count:       11
+    Death Recipients:        1      OpenSSL Sockets:        0
+            WebViews:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 

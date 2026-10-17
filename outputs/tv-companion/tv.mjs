@@ -86,9 +86,10 @@ export class TvController {
     this.size = {width: 1920, height: 1080};
     this.mutedFrom = null;
     this.info = null;
+    this.snapshotCache = null; this.deviceGeneration = 0;
   }
   // Switching TVs forgets everything learned about the previous one.
-  setDevice(device) {this.device = device; this.info = null; this.catalog = new AppCatalog(); this.size = {width: 1920, height: 1080}; this.mutedFrom = null;}
+  setDevice(device) {this.device = device; this.deviceGeneration++; this.snapshotCache = null; this.info = null; this.catalog = new AppCatalog(); this.size = {width: 1920, height: 1080}; this.mutedFrom = null;}
   async connect() {
     const {stdout, stderr} = await exec(this.adbPath, ['connect', this.device], {timeout: 10000});
     if (/failed|unable|refused|cannot|authenticate/i.test(stdout + stderr)) throw Error((stdout + stderr).trim().slice(0, 300));
@@ -230,16 +231,23 @@ export class TvController {
   }
 
   // One round trip: foreground app, media sessions and volume.
+  recentSnapshot(maxAgeMs = 10000, now = Date.now()) {
+    const ageMs = this.snapshotCache ? now - this.snapshotCache.at : Infinity;
+    return ageMs >= 0 && ageMs <= maxAgeMs ? {snapshot: this.snapshotCache.value, ageMs} : {snapshot: null, ageMs: null};
+  }
   async snapshot() {
+    const generation = this.deviceGeneration, capturedAt = Date.now();
     const out = await this.shell(FOCUS + '; echo @@; dumpsys media_session; echo @@; ' + volumeCommand('--get'), {timeout: 8000});
     const [focus = '', sessions = '', volume = ''] = out.split('@@\n');
     await this.refreshApps().catch(() => {});
     const fg = parseFocus(focus);
-    return {
+    const value = {
       foreground: fg ? {pkg: fg.pkg, label: this.catalog.label(fg.pkg)} : null,
       playing: parseSessions(sessions).map(s => ({...s, app: this.catalog.label(s.pkg)})),
       volume: parseVolume(volume)
     };
+    if (generation === this.deviceGeneration && (!this.snapshotCache || capturedAt >= this.snapshotCache.at)) this.snapshotCache = {value, at: capturedAt};
+    return value;
   }
 }
 

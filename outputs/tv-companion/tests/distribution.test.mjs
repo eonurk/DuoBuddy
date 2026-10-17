@@ -95,6 +95,21 @@ test('fresh distributed controller generates private settings, uses local voice 
   assert.equal((await call('/admin/voice', {preview: true})).status, 200);
   await new Promise(resolve => setTimeout(resolve, 100));
   assert.equal((await call('/admin/state')).data.voiceName, 'local fixture');
+  // The same controller must skip Mac synthesis once an embedded-voice TV checks in.
+  const tvHeaders={Authorization:'Bearer '+config.token,'X-Buddy-Version':'7','X-Buddy-Voice':'en_US-lessac-medium'};
+  const local=await (await fetch(`http://127.0.0.1:${port}/api/state`,{headers:tvHeaders})).json();
+  assert.equal(local.localVoice,true);assert.equal(local.voiceEngine,'piper-tv');assert.equal(local.voiceHost,'This TV');assert.equal(local.voiceName,'Lessac Medium · on this TV');
+  assert.equal((await call('/admin/voice',{preview:true})).status,200);
+  const reply=(await call('/admin/state')).data;
+  assert.match(reply.speechText,/DuoBuddy/);assert.equal(reply.audioPath,'');assert.equal(reply.phase,'idle');
+  await call('/admin/stop',{});
+  const stopped=(await call('/admin/state')).data;
+  assert.equal(stopped.speechText,'');assert.equal(stopped.reply,'');
+  // An older TV still receives a playable legacy clip after switching devices/builds.
+  await fetch(`http://127.0.0.1:${port}/api/state`,{headers:{...tvHeaders,'X-Buddy-Version':'6'}});
+  await call('/admin/voice',{preview:true});
+  await new Promise(resolve=>setTimeout(resolve,100));
+  assert.match((await call('/admin/state')).data.audioPath,/^\/api\/audio\/[a-f0-9]{32}\.wav$/);
   await assert.rejects(stat(attempted), {code: 'ENOENT'});
   await assert.rejects(stat(join(runtime, 'credentials.json')), {code: 'ENOENT'});
   await assert.rejects(stat(join(dir, 'work')), {code: 'ENOENT'});

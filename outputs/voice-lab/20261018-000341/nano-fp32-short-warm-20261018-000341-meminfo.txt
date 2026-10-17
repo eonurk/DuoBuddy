@@ -1,0 +1,218 @@
+t=0.768
+Applications Memory Usage (in Kilobytes):
+Uptime: 12231490 Realtime: 39552089
+
+** MEMINFO in pid 10416 [co.duobook.voicelab] **
+                   Pss  Private  Private  SwapPss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------
+  Native Heap    77945    77928        0       20   137600   132066     5533
+  Dalvik Heap     1980     1932        0       13     2734     1198     1536
+ Dalvik Other      157      156        0        0                           
+        Stack       28       28        0        0                           
+       Ashmem        2        0        0        0                           
+    Other dev        8        0        8        0                           
+     .so mmap    17083      400    14864        3                           
+    .apk mmap     1221        0        0        0                           
+    .ttf mmap      235        0      188        0                           
+    .dex mmap     4220        4     3320        0                           
+    .oat mmap      814        0        0        0                           
+    .art mmap     1185      568      108        1                           
+   Other mmap       57        4        0        0                           
+      Unknown      834      832        0        0                           
+        TOTAL   105806    81852    18488       37   140334   133264     7069
+ 
+ App Summary
+                       Pss(KB)
+                        ------
+           Java Heap:     2608
+         Native Heap:    77928
+                Code:    18776
+               Stack:       28
+            Graphics:        0
+       Private Other:     1000
+              System:     5466
+ 
+               TOTAL:   105806       TOTAL SWAP PSS:       37
+ 
+ Objects
+               Views:       13         ViewRootImpl:        1
+         AppContexts:        5           Activities:        1
+              Assets:        4        AssetManagers:        0
+       Local Binders:        8        Proxy Binders:       26
+       Parcel memory:        2         Parcel count:       10
+    Death Recipients:        0      OpenSSL Sockets:        0
+            WebViews:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 
+ 
+ Asset Allocations
+    : 0K
+
+
+t=4.997
+Applications Memory Usage (in Kilobytes):
+Uptime: 12235630 Realtime: 39556229
+
+** MEMINFO in pid 10416 [co.duobook.voicelab] **
+                   Pss  Private  Private  SwapPss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------
+  Native Heap   127209   127192        0       20   137600   132345     5254
+  Dalvik Heap     1364     1316        0       13     2715     1179     1536
+ Dalvik Other      173      172        0        0                           
+        Stack       28       28        0        0                           
+       Ashmem        2        0        0        0                           
+    Other dev        8        0        8        0                           
+     .so mmap    17078      400    14864        3                           
+    .apk mmap     1221        0        0        0                           
+    .ttf mmap      235        0      188        0                           
+    .dex mmap     4261        4     3324        0                           
+    .oat mmap      814        0        0        0                           
+    .art mmap     1189      572      108        1                           
+   Other mmap       57        4        0        0                           
+      Unknown      834      832        0        0                           
+        TOTAL   154510   130520    18492       37   140315   133524     6790
+ 
+ App Summary
+                       Pss(KB)
+                        ------
+           Java Heap:     1996
+         Native Heap:   127192
+                Code:    18780
+               Stack:       28
+            Graphics:        0
+       Private Other:     1016
+              System:     5498
+ 
+               TOTAL:   154510       TOTAL SWAP PSS:       37
+ 
+ Objects
+               Views:       13         ViewRootImpl:        1
+         AppContexts:        5           Activities:        1
+              Assets:        4        AssetManagers:        0
+       Local Binders:        8        Proxy Binders:       26
+       Parcel memory:        2         Parcel count:       10
+    Death Recipients:        0      OpenSSL Sockets:        0
+            WebViews:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 
+ 
+ Asset Allocations
+    : 0K
+
+
+t=9.085
+Applications Memory Usage (in Kilobytes):
+Uptime: 12239813 Realtime: 39560412
+
+** MEMINFO in pid 10416 [co.duobook.voicelab] **
+                   Pss  Private  Private  SwapPss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------
+  Native Heap   127669   127652        0       20   137600   132105     5494
+  Dalvik Heap     1352     1304        0       13     2715     1195     1520
+ Dalvik Other      169      168        0        0                           
+        Stack       28       28        0        0                           
+       Ashmem        2        0        0        0                           
+    Other dev        8        0        8        0                           
+     .so mmap    17083      400    14864        3                           
+    .apk mmap     1221        0        0        0                           
+    .ttf mmap      235        0      188        0                           
+    .dex mmap     4261        4     3324        0                           
+    .oat mmap      814        0        0        0                           
+    .art mmap     1189      572      108        1                           
+   Other mmap       57        4        0        0                           
+      Unknown      834      832        0        0                           
+        TOTAL   154959   130964    18492       37   140315   133300     7014
+ 
+ App Summary
+                       Pss(KB)
+                        ------
+           Java Heap:     1984
+         Native Heap:   127652
+                Code:    18780
+               Stack:       28
+            Graphics:        0
+       Private Other:     1012
+              System:     5503
+ 
+               TOTAL:   154959       TOTAL SWAP PSS:       37
+ 
+ Objects
+               Views:       13         ViewRootImpl:        1
+         AppContexts:        5           Activities:        1
+              Assets:        4        AssetManagers:        0
+       Local Binders:        8        Proxy Binders:       26
+       Parcel memory:        2         Parcel count:       10
+    Death Recipients:        0      OpenSSL Sockets:        0
+            WebViews:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 
+ 
+ Asset Allocations
+    : 0K
+
+
+t=13.575
+Applications Memory Usage (in Kilobytes):
+Uptime: 12244305 Realtime: 39564904
+
+** MEMINFO in pid 10416 [co.duobook.voicelab] **
+                   Pss  Private  Private  SwapPss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------
+  Native Heap   127225   127208        0       20   137600   132365     5234
+  Dalvik Heap     1352     1304        0       13     2715     1195     1520
+ Dalvik Other      173      172        0        0                           
+        Stack       28       28        0        0                           
+       Ashmem        2        0        0        0                           
+    Other dev        8        0        8        0                           
+     .so mmap    17083      400    14864        3                           
+    .apk mmap     1221        0        0        0                           
+    .ttf mmap      235        0      188        0                           
+    .dex mmap     4261        4     3324        0                           
+    .oat mmap      814        0        0        0                           
+    .art mmap     1189      572      108        1                           
+   Other mmap       57        4        0        0                           
+      Unknown      834      832        0        0                           
+        TOTAL   154519   130524    18492       37   140315   133560     6754
+ 
+ App Summary
+                       Pss(KB)
+                        ------
+           Java Heap:     1984
+         Native Heap:   127208
+                Code:    18780
+               Stack:       28
+            Graphics:        0
+       Private Other:     1016
+              System:     5503
+ 
+               TOTAL:   154519       TOTAL SWAP PSS:       37
+ 
+ Objects
+               Views:       13         ViewRootImpl:        1
+         AppContexts:        5           Activities:        1
+              Assets:        4        AssetManagers:        0
+       Local Binders:        8        Proxy Binders:       26
+       Parcel memory:        2         Parcel count:       10
+    Death Recipients:        0      OpenSSL Sockets:        0
+            WebViews:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 
+ 
+ Asset Allocations
+    : 0K

@@ -24,7 +24,7 @@ NODE_HASHES = {
 }
 ADB_HASH = '1811e253b21b12cbfda7201ebaf86c10e7ddcb5c606a7a81f7c82b4c429c2d3b'
 MODULES = '''ambient apps mac-voice memory model-config persona quick-controls reactions
-remote-button runtime-config seasonal server timers tools tv updates voice-config'''.split()
+remote-button runtime-config seasonal server state-delivery timers tools tv updates voice-config'''.split()
 
 
 def run(*args, **kwargs):

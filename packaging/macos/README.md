@@ -7,9 +7,9 @@ bash outputs/tv-companion/build.sh
 python3 packaging/macos/build.py
 ```
 
-The result is `dist/DuoBuddy-0.5.0-beta.1-mac-universal.zip`, with a checksum alongside it. Extract it and drag `DuoBuddy.app` to Applications. macOS 12+ and both Intel and Apple Silicon are supported by the binaries. Intel hardware still needs a physical launch test.
+The result is `dist/DuoBuddy-0.5.0-beta.2-mac-universal.zip`, with a checksum alongside it. Extract it and drag `DuoBuddy.app` to Applications. macOS 12+ and both Intel and Apple Silicon are supported by the binaries. Intel hardware still needs a physical launch test.
 
-The build uses official Node 22.23.3 archives with pinned SHA-256 checksums, the local verified universal ADB 37.0.1 binary and its notices, and an explicit allowlist of controller files. It includes the latest signed TV APK and checks its version against the manifest. It never copies the developer's runtime directory, credentials, household notes, ADB identity, SSH files, voice models or APK signing keystore. Bundled speech uses macOS; the private Piper adapter is replaced with a disabled stub. No SDK or Node installation is required on a tester's Mac.
+The build uses official Node 22.23.3 archives with pinned SHA-256 checksums, the local verified universal ADB 37.0.1 binary and its notices, and an explicit allowlist of controller files. It includes the latest signed TV APK and checks its version against the manifest. It never copies the developer's runtime directory, credentials, household notes, ADB identity, SSH files, separate Mac voice models or APK signing keystore. TV app v0.7 includes Piper Amy and synthesizes speech on the TV. Older TV apps use macOS speech; the private remote Piper adapter is replaced with a disabled stub. No SDK or Node installation is required on a tester's Mac.
 
 The app runs as a menu bar accessory, opens setup in the default browser and prevents idle sleep while its own controller runs. Quit stops that controller and releases the sleep assertion. Its two ports are 18765 (paired TV API, LAN) and 18766 (setup, loopback), so it can coexist with the source controller's default ports. New users start with no selected TV and no API key. App settings live in `~/Library/Application Support/DuoBuddy` with owner-only permissions, separately from source-checkout settings. Replacing the app preserves them.
 
@@ -22,7 +22,7 @@ node --test outputs/tv-companion/tests/*.test.mjs
 Run the actual packaged launcher without opening a browser or contacting a TV:
 
 ```sh
-"work/mac-distribution/DuoBuddy 0.5.0-beta.1/DuoBuddy.app/Contents/MacOS/Buddy" --smoke-test /tmp/duobuddy-smoke-test
+"work/mac-distribution/DuoBuddy 0.5.0-beta.2/DuoBuddy.app/Contents/MacOS/Buddy" --smoke-test /tmp/duobuddy-smoke-test
 ```
 
 Use a fresh temporary directory. This starts and stops the bundled Node controller, checks its PID-specific readiness file, uses built-in Mac speech, and deliberately supplies a nonexistent ADB executable. The launch must succeed without a selected TV. Inspect `controller.log` in the temporary directory for diagnostics.

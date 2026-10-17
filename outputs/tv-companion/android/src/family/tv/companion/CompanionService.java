@@ -25,21 +25,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Buddy's always-on presence: polls the Mac controller, plays its speech, owns the
+ * Buddy's always-on presence: watches the controller, synthesizes speech on the TV, owns the
  * microphone and draws the little companion with live captions over any app.
  */
 public final class CompanionService extends Service {
     public static final String LISTEN="family.tv.companion.LISTEN", FINISH_LISTEN="family.tv.companion.FINISH_LISTEN";
     public static volatile JSONObject state=new JSONObject();
-    public static volatile boolean visible=false,speaking=false,listening=false;
+    public static volatile boolean visible=false,speaking=false,listening=false,preparingVoice=false;
     public static volatile String heard="",localError="";
     private final Handler handler=new Handler(Looper.getMainLooper());
     private WindowManager wm;private LinearLayout bubbleRoot;private TextView caption;private FaceView bubble;
-    private MediaPlayer player;private AudioManager audioManager;private SpeechRecognizer recognizer;
+    private MediaPlayer player;private AudioManager audioManager;private SpeechRecognizer recognizer;private LocalPiper piper;
     private final ListeningSession listenSession=new ListeningSession();
     private boolean polling=false,destroyed=false,autoListen=false,followUpListen=false;
+    private Api.StateWatch stateWatch;
+    private long stateRevision=-1;private String stateSession="";
+    private int followUpRequest=0;
     private String lastReply=null,audioError="",captionReply="";
     private long captionUntil=0;
+    private final Runnable followUpTimer=()->checkFollowUp();
     static final ReplyDisplay replyDisplay=new ReplyDisplay();
     // A reaction to what's on: Buddy pops in for a few seconds, even over a video.
     private int lastReaction=-1;private long reactionUntil=0;private JSONObject reaction=null;
@@ -50,19 +54,48 @@ public final class CompanionService extends Service {
         PendingIntent open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),PendingIntent.FLAG_UPDATE_CURRENT);
         startForeground(12,new Notification.Builder(this,channel).setContentTitle(Duo.name(this)+" is ready").setContentText("Press the remote’s microphone button to talk. The microphone listens only when requested.").setSmallIcon(android.R.drawable.ic_btn_speak_now).setContentIntent(open).build());
         audioManager=(AudioManager)getSystemService(AUDIO_SERVICE);
+        piper=new LocalPiper(this);piper.warm();
+        stateWatch=new Api.StateWatch(this);
         handler.post(poll);
     }
     public int onStartCommand(Intent intent,int flags,int id){
         String action=intent==null?null:intent.getAction();
-        if("stop_speaking".equals(action)){autoListen=false;stopAudio();}
-        if("voice_test".equals(action))Api.request(this,"/api/voice-test",new JSONObject(),null);
+        if("stop_speaking".equals(action)){autoListen=false;stopAudio();finishCaption(400);}
+        if("voice_test".equals(action)){
+            clearListening();autoListen=false;captionReply="Hi! I'm your DuoBuddy. Shall we find something good to watch?";
+            captionUntil=SystemClock.uptimeMillis()+120000;speakLocal(captionReply,true);
+        }
+        if("voice_changed".equals(action)){autoListen=false;stopAudio();piper.warm();}
         if(LISTEN.equals(action))startListening(false);
         if(FINISH_LISTEN.equals(action))finishListening();
         refreshBubble();return START_STICKY;
     }
 
     // ---- speech output ----
-    private void stopAudio(){if(player!=null){try{player.stop();}catch(Exception ignored){}player.release();player=null;}speaking=false;if(audioManager!=null)audioManager.abandonAudioFocus(null);broadcast();}
+    private void stopAudio(){followUpRequest++;handler.removeCallbacks(followUpTimer);if(piper!=null)piper.stop();if(player!=null){try{player.stop();}catch(Exception ignored){}player.release();player=null;}speaking=false;preparingVoice=false;if(audioManager!=null)audioManager.abandonAudioFocus(null);broadcast();}
+    private void checkFollowUp(){
+        if(destroyed)return;
+        // Older controllers checked before publishing the reply.
+        if(!state.optBoolean("stateWait",false)){startListening(true);return;}
+        final int request=++followUpRequest;
+        Api.request(this,"/api/follow-up?replyId="+android.net.Uri.encode(state.optString("replyId","")),null,(data,error)->{
+            if(!destroyed&&request==followUpRequest&&!listening&&!speaking&&!preparingVoice&&"idle".equals(state.optString("phase"))&&data!=null&&data.optBoolean("allowed",false))startListening(true);
+        });
+    }
+    private void speechFinished(boolean finalReply){
+        speaking=false;preparingVoice=false;broadcast();
+        if(finalReply){finishCaption(autoListen?4000:-1);if(autoListen){autoListen=false;handler.postDelayed(followUpTimer,350);}}
+    }
+    private void speakLocal(String text,boolean finalReply){
+        stopAudio();audioError="";if(text.trim().isEmpty())return;
+        preparingVoice=true;changed();
+        piper.speak(text,new LocalPiper.Listener(){
+            public void started(){if(destroyed)return;preparingVoice=false;speaking=true;changed();}
+            public void finished(){if(!destroyed)speechFinished(finalReply);}
+            public void interrupted(){if(destroyed)return;autoListen=false;speechFinished(finalReply);}
+            public void failed(String error){if(destroyed)return;audioError=error;autoListen=false;speaking=false;preparingVoice=false;try{state.put("voiceError",error);}catch(Exception ignored){}finishCaption(-1);changed();}
+        });
+    }
     private void playAudio(String path){
         stopAudio();audioError="";if(path.isEmpty())return;
         if(!path.matches("/api/audio/[a-f0-9]{32}\\.wav")){audioError="Invalid Piper audio path.";return;}
@@ -71,7 +104,7 @@ public final class CompanionService extends Service {
             HashMap<String,String> headers=new HashMap<>();headers.put("Authorization","Bearer "+Api.prefs(this).getString("token",""));
             player.setDataSource(this,Uri.parse(Api.prefs(this).getString("server","")+path),headers);
             player.setOnPreparedListener(p->{if(destroyed){stopAudio();return;}audioManager.requestAudioFocus(null,AudioManager.STREAM_MUSIC,AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);p.start();speaking=true;android.util.Log.i("BuddyVoice","Piper audio started");broadcast();});
-            player.setOnCompletionListener(p->{android.util.Log.i("BuddyVoice","Piper audio completed");stopAudio();finishCaption(autoListen?4000:-1);if(autoListen){autoListen=false;handler.postDelayed(()->startListening(true),350);}});
+            player.setOnCompletionListener(p->{android.util.Log.i("BuddyVoice","Piper audio completed");stopAudio();finishCaption(autoListen?4000:-1);if(autoListen){autoListen=false;handler.postDelayed(followUpTimer,350);}});
             player.setOnErrorListener((p,what,extra)->{audioError="Piper audio could not play ("+what+", "+extra+").";android.util.Log.e("BuddyVoice",audioError);autoListen=false;stopAudio();finishCaption(-1);return true;});
             player.prepareAsync();
         }catch(Exception e){audioError="Piper playback: "+e.getMessage();android.util.Log.e("BuddyVoice",audioError);stopAudio();}
@@ -160,35 +193,40 @@ public final class CompanionService extends Service {
     private void presence(String phase){Api.request(this,"/api/presence",Api.json("phase",phase),null);}
     private void changed(){broadcast();refreshBubble();}
     private void broadcast(){Intent i=new Intent("family.tv.companion.STATE");i.setPackage(getPackageName());sendBroadcast(i);handler.post(()->{if(bubble!=null){bubble.phase=effectivePhase();bubble.talking=speaking;}});}
-    private String effectivePhase(){return listening?"listening":state.optString("phase","idle");}
+    private String effectivePhase(){return listening?"listening":preparingVoice?"thinking":state.optString("phase","idle");}
 
-    // ---- controller polling ----
+    // ---- immediate state delivery, with polling fallback for older controllers ----
     private final Runnable poll=new Runnable(){public void run(){
         if(destroyed)return;
         if(!Api.paired(CompanionService.this)){handler.postDelayed(this,2000);return;}
         if(polling){handler.postDelayed(this,1200);return;}polling=true;
-        Api.request(CompanionService.this,"/api/state",null,(data,error)->{
+        stateWatch.request(stateRevision,stateSession,(data,error)->{
             polling=false;if(destroyed)return;
             if(data!=null){
+                String session=data.optString("session","");
+                if(!session.equals(stateSession)){lastReply=null;stateSession=session;}
+                stateRevision=data.optLong("revision",-1);
                 state=data;if(listening||"thinking".equals(data.optString("phase"))||"acting".equals(data.optString("phase")))replyDisplay.clear();String id=data.optString("replyId","");
                 if(lastReply==null)lastReply=id;
                 else if(!id.equals(lastReply)){
                     lastReply=id;boolean finalReply="idle".equals(data.optString("phase",""))&&!data.optString("reply","").isEmpty();
-                    autoListen=finalReply&&data.optBoolean("followUp",false)&&!data.optString("audioPath","").isEmpty();
+                    autoListen=finalReply&&data.optBoolean("followUp",false);
                     // The caption stays while Buddy speaks and leaves shortly after (see finishCaption);
                     // with no audio to wait for, it shows for a few seconds of reading time.
                     if(finalReply)replyDisplay.received(id,SystemClock.uptimeMillis());else replyDisplay.clear();
-                    if(finalReply){captionReply=data.optString("reply","");captionUntil=SystemClock.uptimeMillis()+(data.optString("audioPath","").isEmpty()?Math.min(9000,3000+captionReply.length()*50L):30000);}
-                    playAudio(data.optString("audioPath",""));
+                    if(finalReply){captionReply=data.optString("reply","");captionUntil=SystemClock.uptimeMillis()+120000;}
+                    String speech=data.optString("speechText",finalReply?data.optString("reply",""):"");
+                    if(!speech.isEmpty())speakLocal(speech,finalReply);
+                    else playAudio(data.optString("audioPath",""));
                 }
                 JSONObject r=data.optJSONObject("reaction");int rid=r==null?0:r.optInt("id",0);
                 // The first poll only records the latest reaction, so a restart doesn't replay it.
                 if(lastReaction<0)lastReaction=rid;
-                else if(rid!=lastReaction){lastReaction=rid;reaction=r;long ms=Math.max(1500,Math.min(10000,r.optLong("ms",4500)));reactionUntil=SystemClock.uptimeMillis()+ms;handler.postDelayed(()->refreshBubble(),ms+80);}
+                else if(rid!=lastReaction){lastReaction=rid;reaction=r;long ms=r==null?0:Math.max(1500,Math.min(10000,r.optLong("ms",4500)));reactionUntil=SystemClock.uptimeMillis()+ms;handler.postDelayed(()->refreshBubble(),ms+80);}
                 if(!audioError.isEmpty())try{state.put("voiceError",audioError);}catch(Exception ignored){}
                 broadcast();
             }else{try{state.put("status","Mac connection unavailable");state.put("phase","idle");state.put("error",error);}catch(Exception ignored){}broadcast();}
-            refreshBubble();handler.postDelayed(poll,1300);
+            refreshBubble();handler.postDelayed(poll,data!=null&&data.optBoolean("stateWait",false)?0:1300);
         });
     }};
 
@@ -198,12 +236,12 @@ public final class CompanionService extends Service {
         if(listening)return heard.isEmpty()?"Listening…":heard;
         if(!localError.isEmpty()&&now<captionUntil)return localError;
         if(phase.equals("thinking")||phase.equals("acting")){String user=state.optString("user","");return phase.equals("acting")?"On it…":user.isEmpty()?"Thinking…":"“"+user+"”";}
-        if(now<captionUntil&&!captionReply.isEmpty())return captionReply;
+        if((preparingVoice||speaking||now<captionUntil)&&!captionReply.isEmpty())return captionReply;
         if(reacting())return reaction.optString("caption","");
         return "";
     }
     private boolean reacting(){return reaction!=null&&SystemClock.uptimeMillis()<reactionUntil;}
-    private boolean busyPhase(){String phase=state.optString("phase","idle");return listening||speaking||phase.equals("thinking")||phase.equals("acting");}
+    private boolean busyPhase(){String phase=state.optString("phase","idle");return listening||preparingVoice||speaking||phase.equals("thinking")||phase.equals("acting");}
     private static int hex(String c,int fallback){try{return android.graphics.Color.parseColor(c);}catch(Exception e){return fallback;}}
     /** Gives the bubble the reaction's pose, outfit and scarf colours while it lasts. */
     private void dress(FaceView f){
@@ -222,7 +260,7 @@ public final class CompanionService extends Service {
     /** Buddy is only on screen while it has something to show, or when the user asked it to stay and nothing is playing. */
     private boolean wantBubble(){
         String phase=state.optString("phase","idle");
-        boolean busy=listening||speaking||phase.equals("thinking")||phase.equals("acting")||SystemClock.uptimeMillis()<captionUntil||reacting();
+        boolean busy=listening||preparingVoice||speaking||phase.equals("thinking")||phase.equals("acting")||SystemClock.uptimeMillis()<captionUntil||reacting();
         return busy||(state.optBoolean("overlay",false)&&!(audioManager!=null&&audioManager.isMusicActive()));
     }
     private void refreshBubble(){
@@ -240,5 +278,5 @@ public final class CompanionService extends Service {
         if(caption!=null){caption.setTextColor(Duo.palette(this).INK);caption.setBackground(panel());String text=captionText();if(text.isEmpty())caption.setVisibility(View.GONE);else{if(!text.contentEquals(caption.getText()))caption.setText(text);caption.setVisibility(View.VISIBLE);}}
     }
     private int dp(float n){return(int)(n*getResources().getDisplayMetrics().density+.5f);}
-    public void onDestroy(){destroyed=true;handler.removeCallbacksAndMessages(null);stopAudio();clearListening();if(bubbleRoot!=null)try{wm.removeView(bubbleRoot);}catch(Exception ignored){}speaking=false;super.onDestroy();}
+    public void onDestroy(){destroyed=true;if(stateWatch!=null)stateWatch.close();handler.removeCallbacksAndMessages(null);stopAudio();if(piper!=null)piper.close();clearListening();if(bubbleRoot!=null)try{wm.removeView(bubbleRoot);}catch(Exception ignored){}speaking=false;super.onDestroy();}
 }

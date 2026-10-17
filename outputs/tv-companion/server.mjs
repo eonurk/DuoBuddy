@@ -21,6 +21,7 @@ import {macSpeak} from './mac-voice.mjs';
 import {quickControl, retireScreenshots} from './quick-controls.mjs';
 import {runtimeConfig} from './runtime-config.mjs';
 import {checkForUpdate} from './updates.mjs';
+import {StateDelivery} from './state-delivery.mjs';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const deployment = runtimeConfig(ROOT);
@@ -47,7 +48,17 @@ const piper = new PiperClient(), audioClips = new Map();
 let config, apiKey = '', model = DEFAULT_MODEL, voiceId = DEFAULT_VOICE, busy = false, history = [], commandAbort = null, speechGeneration = 0;
 let webSearchOn = true, conversationOn = true, seasonalOn = true, reactionsOn = true, acks = {voice: '', clips: []};
 let tvSetupBusy = false;
-let state = {phase: 'idle', status: 'Getting ready', reply: '', replyId: newReplyId(), audioPath: '', followUp: false, voiceEngine: PIPER_ENABLED ? 'piper' : 'mac', voiceHost: PIPER_ENABLED ? 'm1-2' : 'This Mac', voiceName: PIPER_ENABLED ? voiceId : 'macOS voice', voices: PIPER_ENABLED ? VOICES : [], piperEnabled: PIPER_ENABLED, distributed: deployment.distributed, voiceReady: !PIPER_ENABLED, remoteButtonEnabled: false, remoteButtonReady: false, remoteButtonError: '', remoteButtonName: '', remoteName: '', user: '', configured: false, model, device: DEFAULT_DEVICE, tvName: '', overlay: false, lastAction: '', error: '', webSearch: true, conversation: true, tvVersion: 0, revision: 0, person: '', reaction: null, seasonal: true, reactions: true};
+let state = {phase: 'idle', status: 'Getting ready', reply: '', replyId: newReplyId(), audioPath: '', speechText: '', followUp: false, voiceEngine: PIPER_ENABLED ? 'piper' : 'mac', voiceHost: PIPER_ENABLED ? 'm1-2' : 'This Mac', voiceName: PIPER_ENABLED ? voiceId : 'macOS voice', voices: PIPER_ENABLED ? VOICES : [], piperEnabled: PIPER_ENABLED, distributed: deployment.distributed, voiceReady: !PIPER_ENABLED, remoteButtonEnabled: false, remoteButtonReady: false, remoteButtonError: '', remoteButtonName: '', remoteName: '', user: '', configured: false, model, device: DEFAULT_DEVICE, tvName: '', overlay: false, lastAction: '', error: '', webSearch: true, conversation: true, tvVersion: 0, revision: 0, person: '', reaction: null, seasonal: true, reactions: true};
+state.session = randomBytes(16).toString('hex');
+const stateDelivery = new StateDelivery({read: publicState, send});
+let contextRefresh = null;
+async function refreshTvContext() {
+  if (!tv.device || busy || tvSetupBusy) return;
+  if (contextRefresh) return contextRefresh;
+  const pending = tv.snapshot().catch(() => null);
+  contextRefresh = pending;
+  try {return await pending;} finally {if (contextRefresh === pending) contextRefresh = null;}
+}
 
 const timers = new Timers(({label}) => void announce(label ? `Your ${label} timer is done.` : 'Your timer is done.'));
 const runTool = createToolRunner({tv, timers, memory, status: s => update({phase: 'acting', status: 'Using the TV', lastAction: s}), onProfile: person => update({person})});
@@ -76,7 +87,7 @@ const remoteButton = new RemoteButtonMonitor({adb: ADB, device: DEFAULT_DEVICE, 
   update({lastAction: 'Listening from the remote microphone button', remoteButtonError: ''});
 }});
 
-function update(patch) {Object.assign(state, patch, {revision: state.revision + 1});}
+function update(patch) {Object.assign(state, patch, {revision: state.revision + 1}); stateDelivery.publish();}
 
 // This Mac's address on the TV's network (same subnet first), which the TV app calls back on.
 export function lanAddress(tvHost, interfaces = os.networkInterfaces()) {
@@ -110,6 +121,7 @@ async function useTv(device, remoteName) {
   catch (e) {throw Error('Could not connect to ' + device + '. Turn on network debugging on the TV and accept the prompt there. (' + e.message + ')');}
   remoteButton.close(); remoteButton.device = device; remoteButton.name = remoteName;
   tv.setDevice(device); tv.info = info;
+  void refreshTvContext();
   const tvVersion = await tv.companionVersion().catch(() => 0);
   update({device, tvName: describeDevice(info), remoteName, tvVersion, remoteButtonReady: false, remoteButtonError: '', remoteButtonName: ''});
   if (state.remoteButtonEnabled) remoteButton.start();
@@ -124,7 +136,10 @@ async function setupTv(action) {
 }
 // Today's optional outfit idea (Halloween, Christmas, birthdays), refreshed at midnight.
 const look = () => seasonalOn ? seasonalLook(new Date(), memory.birthdays()) : null;
-function publicState() {return {...state, busy: busy || tvSetupBusy, timers: timers.list(), person: memory.current(), look: look()};}
+const TV_VOICE_NAMES = {'en_US-amy-low': 'Amy Low', 'en_US-amy-medium': 'Amy Medium', 'en_US-lessac-medium': 'Lessac Medium', 'en_US-lessac-high': 'Lessac High'};
+export function tvVoiceName(id) {return Object.hasOwn(TV_VOICE_NAMES,id) ? TV_VOICE_NAMES[id] : TV_VOICE_NAMES['en_US-amy-low'];}
+export function usesEmbeddedVoice(version) {return Number.isInteger(Number(version)) && Number(version) >= 7;}
+function publicState() {return {...state, stateWait: true, ...(usesEmbeddedVoice(state.tvVersion) ? {voiceEngine: 'piper-tv', voiceHost: 'This TV', voiceName: tvVoiceName(state.tvVoice) + ' · on this TV', voiceReady: true, voices: [], localVoice: true} : {localVoice: false}), busy: busy || tvSetupBusy, timers: timers.list(), person: memory.current(), look: look()};}
 async function saveConfig(patch) {
   config = {...config, ...patch};
   await writeFile(join(RUNTIME, 'config.json'), JSON.stringify(config), {mode: 0o600});
@@ -164,7 +179,11 @@ async function watchPiper() {
 }
 async function publishReply(text, {followUp = false} = {}) {
   const generation = ++speechGeneration;
-  update({phase: 'thinking', status: 'Preparing voice', reply: text, error: '', audioPath: '', followUp: false});
+  if (usesEmbeddedVoice(state.tvVersion)) {
+    update({phase: 'idle', status: 'Ready when you are', reply: text, replyId: newReplyId(), speechText: text, audioPath: '', followUp: followUp && conversationOn, error: ''});
+    return;
+  }
+  update({phase: 'thinking', status: 'Preparing voice', reply: text, error: '', audioPath: '', speechText: '', followUp: false});
   try {
     const voiceStart = Date.now();
     const speech = await synthesize(text);
@@ -176,7 +195,7 @@ async function publishReply(text, {followUp = false} = {}) {
     update({phase: 'idle', status: 'Voice unavailable', reply: text, replyId: newReplyId(), audioPath: '', followUp: false, error: 'Voice: ' + e.message});
   }
 }
-function stopReply() {speechGeneration++; commandAbort?.abort(); update({phase: 'idle', status: 'Stopped', reply: '', audioPath: '', followUp: false, replyId: newReplyId()});}
+function stopReply() {speechGeneration++; commandAbort?.abort(); update({phase: 'idle', status: 'Stopped', reply: '', audioPath: '', speechText: '', followUp: false, replyId: newReplyId()});}
 function voiceTest() {
   if (busy || tvSetupBusy) throw Error('Please wait for the current request.');
   busy = true;
@@ -211,6 +230,8 @@ async function warmMacAcks() {
 }
 // The acknowledgement uses whichever voice is currently speaking, so it matches the reply.
 function playAck() {
+  if (commandAbort?.signal.aborted) return;
+  if (usesEmbeddedVoice(state.tvVersion)) {update({speechText: ACK_PHRASES[randomInt(ACK_PHRASES.length)], audioPath: '', replyId: newReplyId()}); return;}
   const clips = piperUp && acks.voice === voiceId ? acks.clips : macAcks;
   if (!clips.length || commandAbort?.signal.aborted) return;
   update({audioPath: storeClip(clips[randomInt(clips.length)]), replyId: newReplyId()});
@@ -263,7 +284,7 @@ let followUpStreak = 0;
 async function mayListenAgain() {
   if (!conversationOn || followUpStreak >= 2) return false;
   const snapshot = await withTimeout(tv.snapshot().catch(() => null), 2500);
-  return !snapshot?.playing.some(p => p.state === 'playing' || p.state === 'buffering');
+  return !!snapshot && !snapshot.playing.some(p => p.state === 'playing' || p.state === 'buffering');
 }
 async function chat(text, {followUp = false} = {}) {
   if (busy || tvSetupBusy) throw Error('I am finishing the previous request.');
@@ -283,10 +304,10 @@ async function chat(text, {followUp = false} = {}) {
       await publishReply(quick.reply);
       return;
     }
-    // Situational awareness: what is on screen, what is playing, how loud it is.
-    const snapshot = await withTimeout(tv.snapshot().catch(() => null), 4000);
+    // Background context never delays a reply. Tools still read fresh TV state.
+    const {snapshot, ageMs: snapshotAgeMs} = tv.recentSnapshot();
     const person = memory.current();
-    const instructions = buildInstructions({catalog: tv.catalog, device: tv.info, snapshot, notes: memory.notes, timers: timers.list(), webSearch: webSearchOn, person, personNotes: memory.list('person'), people: Object.keys(memory.people), look: look()});
+    const instructions = buildInstructions({catalog: tv.catalog, device: tv.info, snapshot, snapshotAgeMs, notes: memory.notes, timers: timers.list(), webSearch: webSearchOn, person, personNotes: memory.list('person'), people: Object.keys(memory.people), look: look()});
     // Old chat is resent with every call, so keep only a short, recent window.
     const input = [...history.slice(-HISTORY_ITEMS), {role: 'user', content: text}];
     let final = '';
@@ -340,9 +361,10 @@ async function chat(text, {followUp = false} = {}) {
     history.push({role: 'user', content: text}, {role: 'assistant', content: final});
     history = history.slice(-HISTORY_ITEMS); lastChatAt = Date.now();
     const asked = /\?["”’)]*\s*$/.test(final.trim());
-    await publishReply(final, {followUp: asked && await mayListenAgain()});
+    // New TVs check playback after speech finishes, rather than holding up the reply.
+    await publishReply(final, {followUp: asked && (state.tvVersion >= 8 ? conversationOn && followUpStreak < 2 : await mayListenAgain())});
   } catch (e) {
-    if (commandAbort?.signal.aborted) update({phase: 'idle', status: 'Stopped', error: '', reply: '', audioPath: '', followUp: false, replyId: newReplyId()});
+    if (commandAbort?.signal.aborted) update({phase: 'idle', status: 'Stopped', error: '', reply: '', audioPath: '', speechText: '', followUp: false, replyId: newReplyId()});
     else {
       console.log('Request failed: ' + e.message + (e.cause ? ' (' + (e.cause.code || e.cause.message) + ')' : ''));
       // Speak the problem instead of leaving the previous clip attached to a new reply,
@@ -350,7 +372,7 @@ async function chat(text, {followUp = false} = {}) {
       await publishReply(explain(e));
       update({error: e.message});
     }
-  } finally {clearTimeout(ackTimer); busy = false; commandAbort = null;}
+  } finally {clearTimeout(ackTimer); busy = false; commandAbort = null; update({});}
 }
 
 // Runs one direct tool call from the setup page or the TV's own buttons.
@@ -483,7 +505,7 @@ async function route(req, res, admin = false) {
       }
       if (url.pathname === '/admin/voice' && req.method === 'POST') {
         if (busy || tvSetupBusy) throw Error('Please wait for the current request.');
-        if (!PIPER_ENABLED) {voiceTest(); return send(res, 200, {ok: true, voice: 'macOS voice'});}
+        if (usesEmbeddedVoice(state.tvVersion) || !PIPER_ENABLED) {voiceTest(); return send(res, 200, {ok: true, voice: usesEmbeddedVoice(state.tvVersion) ? tvVoiceName(state.tvVoice) : 'macOS voice'});}
         const b = await body(req), selected = validateVoice(b.voice);
         await saveConfig({voiceId: selected});
         voiceId = selected; stopReply();
@@ -511,19 +533,31 @@ async function route(req, res, admin = false) {
       }
       if (url.pathname === '/admin/stop' && req.method === 'POST') {stopReply(); return send(res, 200, {ok: true});}
       if (url.pathname === '/admin/voice-test' && req.method === 'POST') {voiceTest(); return send(res, 202, {ok: true});}
-      if (url.pathname === '/admin/saved-voice-sample' && req.method === 'POST') {if (!PIPER_ENABLED) throw Error('This edition uses the Mac’s built-in voice.'); await savedVoiceSample(); return send(res, 200, {ok: true});}
+      if (url.pathname === '/admin/saved-voice-sample' && req.method === 'POST') {if (!PIPER_ENABLED && !usesEmbeddedVoice(state.tvVersion)) throw Error('Install the latest TV app to use its embedded voice.'); await savedVoiceSample(); return send(res, 200, {ok: true});}
       if (url.pathname === '/admin/overlay' && req.method === 'POST') {const b = await body(req); await saveConfig({overlay: !!b.enabled}); update({overlay: !!b.enabled}); return send(res, 200, {ok: true});}
       if (url.pathname === '/admin/screen' && req.method === 'GET') return send(res, 200, await tv.screen());
     } else {
       if (!equal(req.headers.authorization, 'Bearer ' + config.token)) return send(res, 401, {error: 'Pairing required.'});
       const version = Number(req.headers['x-buddy-version']);
+      const tvVoice = req.headers['x-buddy-voice'];
+      if (usesEmbeddedVoice(version) && Object.hasOwn(TV_VOICE_NAMES, tvVoice) && tvVoice !== state.tvVoice) update({tvVoice});
       if (version && version !== state.tvVersion) update({tvVersion: version});
       const clip = url.pathname.match(/^\/api\/audio\/([a-f0-9]{32})\.wav$/);
       if (clip && req.method === 'GET') {
         const audio = audioClips.get(clip[1]); if (!audio) return send(res, 404, {error: 'Speech clip expired.'});
         res.writeHead(200, {'Content-Type': 'audio/wav', 'Content-Length': audio.length, 'Cache-Control': 'no-store'}); res.end(audio); return;
       }
-      if (url.pathname === '/api/state' && req.method === 'GET') return send(res, 200, publicState());
+      if (url.pathname === '/api/state' && req.method === 'GET') {
+        const since = url.searchParams.get('since');
+        if (since !== null && /^\d{1,15}$/.test(since)) return stateDelivery.wait(res, Number(since), url.searchParams.get('session'));
+        return send(res, 200, publicState());
+      }
+      if (url.pathname === '/api/follow-up' && req.method === 'GET') {
+        const replyId = url.searchParams.get('replyId');
+        const current = () => !busy && !tvSetupBusy && state.phase === 'idle' && state.followUp && String(state.replyId) === replyId;
+        const allowed = current() && await mayListenAgain();
+        return send(res, 200, {allowed: !!allowed && current()});
+      }
       if (url.pathname === '/api/ambient' && req.method === 'GET') return send(res, 200, await ambientData());
       if (url.pathname === '/api/apps' && req.method === 'GET') {
         await tv.refreshApps().catch(() => {});
@@ -554,6 +588,8 @@ export async function start() {
   await memory.load(); await ambient.load();
   update({configured: !!apiKey, model, voiceName: PIPER_ENABLED ? voiceId : 'macOS voice', overlay: config.overlay === true, webSearch: webSearchOn, conversation: conversationOn, seasonal: seasonalOn, reactions: reactionsOn, status: apiKey ? 'Ready when you are' : 'Add your API key on the Mac setup page'});
   reactions.start();
+  void refreshTvContext();
+  const contextTimer = setInterval(() => void refreshTvContext(), 5000); contextTimer.unref();
   update({remoteButtonEnabled: config.remoteButtonEnabled !== false}); if (state.remoteButtonEnabled && tv.device) remoteButton.start();
   await writePairing();
   const listen = (server, port, host) => new Promise((resolve, reject) => {server.once('error', reject); server.listen(port, host, resolve);});
@@ -572,6 +608,6 @@ export async function start() {
     void tv.refreshApps().then(apps => console.log('TV apps found: ' + apps.length)).catch(e => console.log('TV not reachable yet: ' + e.message));
   }
   void warmMacAcks(); if (PIPER_ENABLED) void watchPiper();
-  const close = () => {remoteButton.close(); reactions.stop(); piper.close(); timers.clear(); process.exit(0);}; process.once('SIGINT', close); process.once('SIGTERM', close);
+  const close = () => {clearInterval(contextTimer); remoteButton.close(); reactions.stop(); piper.close(); timers.clear(); process.exit(0);}; process.once('SIGINT', close); process.once('SIGTERM', close);
 }
 if (process.argv[1] && await realpath(process.argv[1]).catch(() => '') === fileURLToPath(import.meta.url)) await start();

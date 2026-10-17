@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseFocus, parseVolume, parseSessions, describeSnapshot} from '../tv.mjs';
+import {TvController, parseFocus, parseVolume, parseSessions, describeSnapshot} from '../tv.mjs';
 
 const dump = `MEDIA SESSION SERVICE (dumpsys media_session)
 Sessions Stack - have 3 sessions:
@@ -48,4 +48,26 @@ test('screenshot compression never loses the picture: bad input falls back to th
   const notAnImage = Buffer.from('definitely not a png');
   const result = await compressScreenshot(notAnImage);
   assert.equal(result.mime, 'image/png'); assert.deepEqual(result.data, notAnImage);
+});
+
+test('chat can use recent background context without running another TV command, but stale context expires', async () => {
+  const tv = new TvController({adb: 'unused', device: 'first'});
+  let calls = 0;
+  tv.shell = async () => {calls++; return 'mCurrentFocus=null\n@@\n\n@@\nvolume is 3 in range [0..15]';};
+  tv.refreshApps = async () => {};
+  assert.equal(tv.recentSnapshot().snapshot, null);
+  const fresh = await tv.snapshot();
+  assert.deepEqual(tv.recentSnapshot().snapshot, fresh); assert.equal(calls, 1);
+  assert.equal(tv.recentSnapshot(10000, tv.snapshotCache.at + 10001).snapshot, null);
+  tv.setDevice('second'); assert.equal(tv.recentSnapshot().snapshot, null);
+});
+
+test('a snapshot finishing after a TV switch cannot populate the new TV context', async () => {
+  const tv = new TvController({adb: 'unused', device: 'first'});
+  let finish;
+  tv.shell = () => new Promise(resolve => {finish = resolve;});
+  tv.refreshApps = async () => {};
+  const pending = tv.snapshot(); tv.setDevice('second');
+  finish(''); await pending;
+  assert.equal(tv.recentSnapshot().snapshot, null);
 });

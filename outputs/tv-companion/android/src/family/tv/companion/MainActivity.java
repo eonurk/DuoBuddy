@@ -30,6 +30,7 @@ public final class MainActivity extends Activity {
         LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setBackgroundColor(colors.CANVAS);root.setPadding(dp(48),dp(38),dp(56),dp(34));setContentView(root);
         LinearLayout brand=new LinearLayout(this);brand.setGravity(Gravity.CENTER_VERTICAL);
         brand.addView(Duo.text(this,Duo.name(this),22,colors.INK,700),new LinearLayout.LayoutParams(0,-2,1));
+        brand.addView(Duo.quiet(this,"music","Voice",()->chooseVoice()),new LinearLayout.LayoutParams(-2,dp(44)));
         brand.addView(Duo.quiet(this,Duo.night(this)?"moon":"sun","Appearance",()->chooseAppearance()),new LinearLayout.LayoutParams(-2,dp(44)));
         brand.setClipChildren(false);root.addView(brand,new LinearLayout.LayoutParams(-1,dp(44)));
         LinearLayout content=new LinearLayout(this);content.setClipChildren(false);root.addView(content,new LinearLayout.LayoutParams(-1,0,1));
@@ -52,7 +53,7 @@ public final class MainActivity extends Activity {
         LinearLayout t=Duo.primary(this,"mic","Talk",()->{if(CompanionService.listening)startForegroundService(new Intent(this,CompanionService.class).setAction(CompanionService.FINISH_LISTEN));else listen();});talk=t;talkLabel=(TextView)t.getChildAt(1);actions.addView(t,new LinearLayout.LayoutParams(-2,dp(48)));
         for(View v:new View[]{Duo.quiet(this,"apps","Apps",()->chooseApp()),Duo.quiet(this,"style","Style",()->chooseStyle()),Duo.quiet(this,"keyboard","Type",()->typeRequest())}){LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-2,dp(48));ap.leftMargin=dp(8);actions.addView(v,ap);}
         // Room around the row so focus shadows and the Talk button's lift aren't clipped.
-        actions.setPadding(dp(4),dp(8),dp(4),dp(10));actions.setClipToPadding(false);right.setClipChildren(false);right.setClipToPadding(false);root.setClipChildren(false);
+        actions.setPadding(dp(4),dp(8),dp(4),dp(10));actions.setClipChildren(false);actions.setClipToPadding(false);right.setClipChildren(false);right.setClipToPadding(false);root.setClipChildren(false);root.setClipToPadding(false);
         LinearLayout.LayoutParams acp=new LinearLayout.LayoutParams(-1,-2);acp.topMargin=dp(10);acp.leftMargin=-dp(4);right.addView(actions,acp);
         input=new EditText(this);talk.requestFocus();
     }
@@ -75,16 +76,44 @@ public final class MainActivity extends Activity {
             if(changed)recreate();
         }).setNegativeButton("Done",null));
     }
+    private void chooseVoice(){
+        java.util.List<VoiceStore.Voice> voices=VoiceStore.list(this);String[] labels=new String[voices.size()];
+        String selected=VoiceStore.selected(this).id;int chosen=0;
+        for(int i=0;i<voices.size();i++){VoiceStore.Voice v=voices.get(i);if(v.id.equals(selected))chosen=i;labels[i]=v.label+" · "+(v.bundled?"included · fast default":VoiceStore.installed(this,v)?"downloaded":v.size()+" download");}
+        Fonts.show(Fonts.dialog(this).setTitle("Voice").setSingleChoiceItems(labels,chosen,(dialog,index)->{dialog.dismiss();voiceDetails(voices.get(index));}).setNegativeButton("Done",null));
+    }
+    private void voiceDetails(VoiceStore.Voice voice){
+        boolean ready=VoiceStore.installed(this,voice);
+        AlertDialog.Builder builder=Fonts.dialog(this).setTitle(voice.label).setMessage(voice.description+(voice.bundled?". This voice is included and works offline.":". "+voice.size()+" stored on this TV. After downloading, it works offline. Speed depends on your TV."))
+            .setPositiveButton(ready?"Use & preview":"Download & use",(dialog,which)->{if(ready)useVoice(voice);else downloadVoice(voice);})
+            .setNegativeButton("Back",(dialog,which)->chooseVoice());
+        if(ready&&!voice.bundled)builder.setNeutralButton("Remove download",(dialog,which)->{stopSpeaking();VoiceStore.remove(this,voice);startForegroundService(new Intent(this,CompanionService.class).setAction("voice_changed"));chooseVoice();});
+        Fonts.show(builder);
+    }
+    private void useVoice(VoiceStore.Voice voice){
+        VoiceStore.select(this,voice);startForegroundService(new Intent(this,CompanionService.class).setAction("voice_test"));
+        Toast.makeText(this,voice.label+" selected",Toast.LENGTH_SHORT).show();
+    }
+    private void downloadVoice(VoiceStore.Voice voice){
+        final VoiceStore.Download[] request={null};
+        final AlertDialog dialog=Fonts.show(Fonts.dialog(this).setTitle("Downloading "+voice.label).setMessage("0% · "+voice.size()).setNegativeButton("Cancel",(d,w)->{if(request[0]!=null)request[0].cancel();}));
+        dialog.setCanceledOnTouchOutside(false);dialog.setOnCancelListener(d->{if(request[0]!=null)request[0].cancel();});
+        request[0]=VoiceStore.install(this,voice,new VoiceStore.Listener(){
+            public void progress(long bytes,long total){if(!isDestroyed()&&dialog.isShowing())dialog.setMessage((bytes*100/total)+"% · "+voice.size());}
+            public void ready(){if(isDestroyed()||!dialog.isShowing())return;dialog.dismiss();useVoice(voice);}
+            public void failed(String message){if(isDestroyed()||!dialog.isShowing())return;dialog.dismiss();Fonts.show(Fonts.dialog(MainActivity.this).setTitle("Voice download").setMessage(message).setPositiveButton("OK",null));}
+        });
+    }
     private String greetingText(){
         int h=java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY);String person=CompanionService.state.optString("person","");
         return (h<5?"Good night":h<12?"Good morning":h<18?"Good afternoon":h<22?"Good evening":"Good night")+(person.isEmpty()?"":", "+person);
     }
     private void render(){if(status==null)return;JSONObject s=CompanionService.state;boolean listening=CompanionService.listening;String phase=listening?"listening":s.optString("phase","idle");face.phase=phase;face.talking=CompanionService.speaking;
-        String message=listening?"Listening":s.optString("status",Api.paired(this)?"Connecting to your Mac":"Pair this TV from your Mac");
+        String message=listening?"Listening":CompanionService.preparingVoice?"Preparing voice":s.optString("status",Api.paired(this)?"Connecting to your Mac":"Pair this TV from your Mac");
         int dot=listening?Duo.SKY:phase.equals("thinking")||phase.equals("acting")?Duo.ORANGE:Duo.GREEN;
         android.text.SpannableString pill=new android.text.SpannableString("●  "+message);pill.setSpan(new android.text.style.ForegroundColorSpan(dot),0,1,0);status.setText(pill);
         boolean working=phase.equals("thinking")||phase.equals("acting");
-        String answer=!listening&&!working&&CompanionService.replyDisplay.visible(s.optString("replyId",""),SystemClock.uptimeMillis(),CompanionService.speaking)?s.optString("reply",""):"",user=s.optString("user","");
+        String answer=!listening&&!working&&CompanionService.replyDisplay.visible(s.optString("replyId",""),SystemClock.uptimeMillis(),CompanionService.speaking||CompanionService.preparingVoice)?s.optString("reply",""):"",user=s.optString("user","");
         greeting.setText(!answer.isEmpty()&&!user.isEmpty()?"You asked: “"+user+"”":greetingText());
         String text=!answer.isEmpty()?answer:listening?"I’m listening…":working?phase.equals("acting")?"On it…":"Let me think…":!s.optBoolean("configured",true)&&Api.paired(this)?"Add your API key on the Mac setup page, then press Talk.":"What shall we do today?";
         reply.setText(text);reply.setTextSize(text.length()>140?22:text.length()>70?26:30);

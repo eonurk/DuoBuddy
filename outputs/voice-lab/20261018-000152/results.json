@@ -1,0 +1,335 @@
+{
+  "timestamp": "20261018-000152",
+  "implementation": "direct-jni",
+  "deviceFacts": "MIBOX4\narmeabi-v7a,armeabi\n28\nMemTotal:        2034840 kB\nMemFree:          295724 kB\nMemAvailable:     877016 kB\nBuffers:           31356 kB\nCached:           684116 kB\nFilesystem      1K-blocks    Used Available Use% Mounted on\n/dev/block/data   5292456 4379104    864200  84% /data\n",
+  "systemDefaultTtsBefore": "null",
+  "originalActivity": "mResumedActivity: ActivityRecord{90817a1 u0 com.google.android.tvlauncher/.MainActivity t2098}",
+  "models": {
+    "nano-fp32": {
+      "name": "kitten-nano-en-v0_8-fp32",
+      "apkBytes": 53578066,
+      "sha256": "cd91e7e9924b4303fd3311a364159a9e687806527c30a36ce8a0f165e61c8e1c",
+      "publisherCertificateSha256": "030a90bdd6e4c5eef1e161acfa6455a912c45cb2423b64df449ca88fdee097bb",
+      "source": "https://k2-fsa.github.io/sherpa/onnx/tts/all/English/kitten-nano-en-v0_8-fp32.html"
+    }
+  },
+  "results": [
+    {
+      "id": "nano-fp32-short-cold-20261018-000152",
+      "model": "nano-fp32",
+      "sample": "short",
+      "text": "Hi! I'm your DuoBuddy. Shall we find something good to watch?",
+      "engine": "com.k2fsa.sherpa.onnx.tts.engine",
+      "initMs": 7636,
+      "synthesisMs": 18817,
+      "directNative": true,
+      "speaker": 1,
+      "threads": 2,
+      "firstAudioMs": -1,
+      "engineStartMs": -1,
+      "audioSeconds": 6.10875,
+      "realTimeFactor": 3.0803355842029876,
+      "error": null,
+      "audioBytes": 293264,
+      "boundEngine": "bundled Sherpa-ONNX JNI (no Android TTS service)",
+      "temperature": "cold",
+      "memoryProcess": "co.duobook.voicelab",
+      "sampledPeakEnginePssKiB": 187850,
+      "memorySamples": [
+        {
+          "elapsed": 1.476,
+          "pssKiB": 6478,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 2.5,
+          "pssKiB": 99202,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 3.37,
+          "pssKiB": 155130,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 4.29,
+          "pssKiB": 156238,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 5.113,
+          "pssKiB": 156269,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 5.967,
+          "pssKiB": 156265,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 6.848,
+          "pssKiB": 156817,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 7.744,
+          "pssKiB": 187850,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 8.564,
+          "pssKiB": 184818,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 9.472,
+          "pssKiB": 165235,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 10.428,
+          "pssKiB": 165231,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 11.367,
+          "pssKiB": 135784,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 12.211,
+          "pssKiB": 165088,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 13.118,
+          "pssKiB": 145062,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 14.022,
+          "pssKiB": 147364,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 14.873,
+          "pssKiB": 147364,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 15.766,
+          "pssKiB": 147500,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 16.677,
+          "pssKiB": 147044,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 17.537,
+          "pssKiB": 147040,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 18.376,
+          "pssKiB": 127672,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 19.255,
+          "pssKiB": 127664,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 20.159,
+          "pssKiB": 129110,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 21.011,
+          "pssKiB": 131950,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 21.922,
+          "pssKiB": 131958,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 22.773,
+          "pssKiB": 149134,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 23.608,
+          "pssKiB": 149554,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 24.481,
+          "pssKiB": 155746,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 25.34,
+          "pssKiB": 155754,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 26.203,
+          "pssKiB": 155758,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 27.071,
+          "pssKiB": 152490,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 27.906,
+          "pssKiB": 114809,
+          "rssKiB": null
+        }
+      ],
+      "afterMeminfo": "MemTotal:        2034840 kB\nMemFree:          160508 kB\nMemAvailable:     798496 kB\nBuffers:           28708 kB\nCached:           739248 kB\n"
+    },
+    {
+      "id": "nano-fp32-short-warm-20261018-000152",
+      "model": "nano-fp32",
+      "sample": "short",
+      "text": "Hi! I'm your DuoBuddy. Shall we find something good to watch?",
+      "engine": "com.k2fsa.sherpa.onnx.tts.engine",
+      "initMs": 0,
+      "synthesisMs": 18528,
+      "directNative": true,
+      "speaker": 1,
+      "threads": 2,
+      "firstAudioMs": -1,
+      "engineStartMs": -1,
+      "audioSeconds": 6.106125,
+      "realTimeFactor": 3.0343302831173617,
+      "error": null,
+      "audioBytes": 293138,
+      "boundEngine": "bundled Sherpa-ONNX JNI (no Android TTS service)",
+      "temperature": "warm",
+      "memoryProcess": "co.duobook.voicelab",
+      "sampledPeakEnginePssKiB": 174170,
+      "memorySamples": [
+        {
+          "elapsed": 0.608,
+          "pssKiB": 104458,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 1.605,
+          "pssKiB": 105362,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 2.467,
+          "pssKiB": 105626,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 3.301,
+          "pssKiB": 142510,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 4.155,
+          "pssKiB": 159218,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 5.017,
+          "pssKiB": 154602,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 5.863,
+          "pssKiB": 154606,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 6.726,
+          "pssKiB": 154606,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 7.599,
+          "pssKiB": 154598,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 8.461,
+          "pssKiB": 154606,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 9.345,
+          "pssKiB": 154598,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 10.202,
+          "pssKiB": 154594,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 11.053,
+          "pssKiB": 154934,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 11.901,
+          "pssKiB": 154474,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 12.772,
+          "pssKiB": 154602,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 13.652,
+          "pssKiB": 154602,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 14.563,
+          "pssKiB": 174170,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 15.556,
+          "pssKiB": 154331,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 16.435,
+          "pssKiB": 154602,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 17.369,
+          "pssKiB": 154602,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 18.243,
+          "pssKiB": 154474,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 19.16,
+          "pssKiB": 159055,
+          "rssKiB": null
+        }
+      ],
+      "afterMeminfo": "MemTotal:        2034840 kB\nMemFree:          168620 kB\nMemAvailable:     759540 kB\nBuffers:           28792 kB\nCached:           693020 kB\n"
+    }
+  ],
+  "systemDefaultTtsAfter": "null",
+  "defaultTtsUnchanged": true
+}

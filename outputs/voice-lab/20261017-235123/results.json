@@ -1,0 +1,863 @@
+{
+  "timestamp": "20261017-235123",
+  "deviceFacts": "MIBOX4\narmeabi-v7a,armeabi\n28\nMemTotal:        2034840 kB\nMemFree:          207088 kB\nMemAvailable:     790964 kB\nBuffers:           43256 kB\nCached:           670592 kB\nFilesystem      1K-blocks    Used Available Use% Mounted on\n/dev/block/data   5292456 4124980   1118324  79% /data\n",
+  "systemDefaultTtsBefore": "null",
+  "originalActivity": "mResumedActivity: ActivityRecord{90817a1 u0 com.google.android.tvlauncher/.MainActivity t2098}",
+  "models": {
+    "nano": {
+      "name": "kitten-nano-en-v0_8-int8",
+      "apkBytes": 53578066,
+      "sha256": "cd91e7e9924b4303fd3311a364159a9e687806527c30a36ce8a0f165e61c8e1c",
+      "publisherCertificateSha256": "030a90bdd6e4c5eef1e161acfa6455a912c45cb2423b64df449ca88fdee097bb",
+      "source": "https://k2-fsa.github.io/sherpa/onnx/tts/all/English/kitten-nano-en-v0_8-int8.html"
+    },
+    "micro": {
+      "name": "kitten-micro-en-v0_8",
+      "apkBytes": 66148665,
+      "sha256": "cae31315449c0ee407ce666c8cbdc602dd7a10aa97aea3e832ada8c2dfe3ad0d",
+      "publisherCertificateSha256": "030a90bdd6e4c5eef1e161acfa6455a912c45cb2423b64df449ca88fdee097bb",
+      "source": "https://k2-fsa.github.io/sherpa/onnx/tts/all/English/kitten-micro-en-v0_8.html"
+    },
+    "amy": {
+      "name": "vits-piper-en_US-amy-low",
+      "apkBytes": 88172814,
+      "sha256": "1614031814e3504acb8be3265eef8657d482a81c535a0900ee04c6ebf15fab68",
+      "publisherCertificateSha256": "030a90bdd6e4c5eef1e161acfa6455a912c45cb2423b64df449ca88fdee097bb",
+      "source": "https://k2-fsa.github.io/sherpa/onnx/tts/all/English/vits-piper-en_US-amy-low.html"
+    }
+  },
+  "results": [
+    {
+      "id": "nano-short-cold-20261017-235123",
+      "model": "nano",
+      "sample": "short",
+      "text": "Hi! I'm your DuoBuddy. Shall we find something good to watch?",
+      "engine": "com.k2fsa.sherpa.onnx.tts.engine",
+      "initMs": 14666,
+      "synthesisMs": 28677,
+      "firstAudioMs": -1,
+      "engineStartMs": 10,
+      "audioSeconds": 0,
+      "realTimeFactor": null,
+      "error": "The engine produced no playable WAV audio",
+      "audioBytes": 44,
+      "boundEngine": "com.k2fsa.sherpa.onnx.tts.engine",
+      "temperature": "cold",
+      "sampledPeakEnginePssKiB": 139312,
+      "memorySamples": [
+        {
+          "elapsed": 0.944,
+          "pssKiB": null,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 1.832,
+          "pssKiB": 14649,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 2.667,
+          "pssKiB": 17507,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 3.51,
+          "pssKiB": 15548,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 4.347,
+          "pssKiB": 16392,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 5.173,
+          "pssKiB": 15781,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 6.009,
+          "pssKiB": 40935,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 6.837,
+          "pssKiB": 91728,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 7.646,
+          "pssKiB": 101770,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 8.453,
+          "pssKiB": 108426,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 9.265,
+          "pssKiB": 108778,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 10.151,
+          "pssKiB": 108850,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 11.216,
+          "pssKiB": 108878,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 12.138,
+          "pssKiB": 113487,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 12.955,
+          "pssKiB": 110188,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 13.837,
+          "pssKiB": 111215,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 14.644,
+          "pssKiB": 111196,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 15.45,
+          "pssKiB": 124052,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 16.718,
+          "pssKiB": 132746,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 17.901,
+          "pssKiB": 115981,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 18.964,
+          "pssKiB": 112205,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 19.907,
+          "pssKiB": 105117,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 20.818,
+          "pssKiB": 107097,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 21.971,
+          "pssKiB": 111569,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 23.123,
+          "pssKiB": 106560,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 24.204,
+          "pssKiB": 106576,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 25.103,
+          "pssKiB": 119836,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 26.057,
+          "pssKiB": 138012,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 27.112,
+          "pssKiB": 131528,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 28.007,
+          "pssKiB": 134516,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 29.198,
+          "pssKiB": 134375,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 30.148,
+          "pssKiB": 137180,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 31.178,
+          "pssKiB": 121200,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 32.1,
+          "pssKiB": 139312,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 33.006,
+          "pssKiB": 132804,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 33.842,
+          "pssKiB": 132812,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 34.748,
+          "pssKiB": 132800,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 35.568,
+          "pssKiB": 132812,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 36.405,
+          "pssKiB": 132804,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 37.471,
+          "pssKiB": 125784,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 38.405,
+          "pssKiB": 125792,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 39.282,
+          "pssKiB": 126184,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 40.346,
+          "pssKiB": 126176,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 41.331,
+          "pssKiB": 126188,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 42.233,
+          "pssKiB": 126188,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 43.344,
+          "pssKiB": 126169,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 44.387,
+          "pssKiB": 118878,
+          "rssKiB": null
+        }
+      ],
+      "afterMeminfo": "MemTotal:        2034840 kB\nMemFree:          155280 kB\nMemAvailable:     789272 kB\nBuffers:           42428 kB\nCached:           719412 kB\n"
+    },
+    {
+      "id": "micro-short-cold-20261017-235123",
+      "model": "micro",
+      "sample": "short",
+      "text": "Hi! I'm your DuoBuddy. Shall we find something good to watch?",
+      "engine": "com.k2fsa.sherpa.onnx.tts.engine",
+      "initMs": 11863,
+      "synthesisMs": 27894,
+      "firstAudioMs": -1,
+      "engineStartMs": 9,
+      "audioSeconds": 0,
+      "realTimeFactor": null,
+      "error": "The engine produced no playable WAV audio",
+      "audioBytes": 44,
+      "boundEngine": "com.k2fsa.sherpa.onnx.tts.engine",
+      "temperature": "cold",
+      "sampledPeakEnginePssKiB": 167196,
+      "memorySamples": [
+        {
+          "elapsed": 1.009,
+          "pssKiB": null,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 2.233,
+          "pssKiB": 56464,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 3.155,
+          "pssKiB": 126580,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 3.974,
+          "pssKiB": 139808,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 4.825,
+          "pssKiB": 145536,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 5.758,
+          "pssKiB": 146113,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 6.594,
+          "pssKiB": 146105,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 7.423,
+          "pssKiB": 146179,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 8.273,
+          "pssKiB": 146223,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 9.15,
+          "pssKiB": 150635,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 9.965,
+          "pssKiB": 148935,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 10.787,
+          "pssKiB": 148707,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 11.599,
+          "pssKiB": 148619,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 12.48,
+          "pssKiB": 167196,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 13.653,
+          "pssKiB": 166959,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 14.909,
+          "pssKiB": 134122,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 16.268,
+          "pssKiB": 131950,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 17.231,
+          "pssKiB": 126890,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 18.5,
+          "pssKiB": 130374,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 19.787,
+          "pssKiB": 129714,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 20.994,
+          "pssKiB": 128384,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 22.181,
+          "pssKiB": 128677,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 23.302,
+          "pssKiB": 128188,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 24.17,
+          "pssKiB": 159828,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 25.014,
+          "pssKiB": 162322,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 25.914,
+          "pssKiB": 152090,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 27.041,
+          "pssKiB": 141582,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 27.958,
+          "pssKiB": 159310,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 28.8,
+          "pssKiB": 152086,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 29.679,
+          "pssKiB": 152090,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 30.612,
+          "pssKiB": 152078,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 31.704,
+          "pssKiB": 152086,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 32.55,
+          "pssKiB": 158134,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 33.553,
+          "pssKiB": 152078,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 34.511,
+          "pssKiB": 147438,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 35.484,
+          "pssKiB": 147450,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 36.528,
+          "pssKiB": 146044,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 37.566,
+          "pssKiB": 145908,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 38.523,
+          "pssKiB": 146050,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 39.593,
+          "pssKiB": 146046,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 40.471,
+          "pssKiB": 146050,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 41.338,
+          "pssKiB": 132514,
+          "rssKiB": null
+        }
+      ],
+      "afterMeminfo": "MemTotal:        2034840 kB\nMemFree:          208112 kB\nMemAvailable:     766880 kB\nBuffers:           31960 kB\nCached:           663460 kB\n"
+    },
+    {
+      "id": "amy-short-cold-20261017-235123",
+      "model": "amy",
+      "sample": "short",
+      "text": "Hi! I'm your DuoBuddy. Shall we find something good to watch?",
+      "engine": "com.k2fsa.sherpa.onnx.tts.engine",
+      "initMs": 18796,
+      "synthesisMs": 5868,
+      "firstAudioMs": 858,
+      "engineStartMs": 9,
+      "audioSeconds": 4.4135625,
+      "realTimeFactor": 1.32953821317813,
+      "error": null,
+      "audioBytes": 141278,
+      "boundEngine": "com.k2fsa.sherpa.onnx.tts.engine",
+      "temperature": "cold",
+      "sampledPeakEnginePssKiB": 171552,
+      "memorySamples": [
+        {
+          "elapsed": 1.046,
+          "pssKiB": null,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 2.036,
+          "pssKiB": 29752,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 2.977,
+          "pssKiB": 111038,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 3.805,
+          "pssKiB": 165247,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 4.639,
+          "pssKiB": 169595,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 5.449,
+          "pssKiB": 170292,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 6.366,
+          "pssKiB": 170339,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 7.184,
+          "pssKiB": 170787,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 8.003,
+          "pssKiB": 171523,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 8.815,
+          "pssKiB": 171495,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 9.605,
+          "pssKiB": 171499,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 10.448,
+          "pssKiB": 171499,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 11.264,
+          "pssKiB": 171503,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 12.089,
+          "pssKiB": 171544,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 12.897,
+          "pssKiB": 171544,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 13.713,
+          "pssKiB": 171544,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 14.518,
+          "pssKiB": 171544,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 15.365,
+          "pssKiB": 171548,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 16.196,
+          "pssKiB": 171548,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 17.018,
+          "pssKiB": 171540,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 17.94,
+          "pssKiB": 171378,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 18.814,
+          "pssKiB": 171552,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 19.617,
+          "pssKiB": 171552,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 20.521,
+          "pssKiB": 116869,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 21.361,
+          "pssKiB": 114206,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 22.203,
+          "pssKiB": 131154,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 23.077,
+          "pssKiB": 114082,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 23.936,
+          "pssKiB": 120138,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 24.792,
+          "pssKiB": 133098,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 25.954,
+          "pssKiB": 158392,
+          "rssKiB": null
+        }
+      ],
+      "afterMeminfo": "MemTotal:        2034840 kB\nMemFree:          195352 kB\nMemAvailable:     752204 kB\nBuffers:           28772 kB\nCached:           661656 kB\n"
+    },
+    {
+      "id": "amy-short-warm-20261017-235123",
+      "model": "amy",
+      "sample": "short",
+      "text": "Hi! I'm your DuoBuddy. Shall we find something good to watch?",
+      "engine": "com.k2fsa.sherpa.onnx.tts.engine",
+      "initMs": 0,
+      "synthesisMs": 5822,
+      "firstAudioMs": 766,
+      "engineStartMs": 3,
+      "audioSeconds": 4.3871875,
+      "realTimeFactor": 1.3270460859035544,
+      "error": null,
+      "audioBytes": 140434,
+      "boundEngine": "com.k2fsa.sherpa.onnx.tts.engine",
+      "temperature": "warm",
+      "sampledPeakEnginePssKiB": 174702,
+      "memorySamples": [
+        {
+          "elapsed": 0.498,
+          "pssKiB": 115876,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 1.35,
+          "pssKiB": 125388,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 2.2,
+          "pssKiB": 125272,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 3.059,
+          "pssKiB": 138532,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 4.031,
+          "pssKiB": 140704,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 4.982,
+          "pssKiB": 156419,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 5.944,
+          "pssKiB": 174702,
+          "rssKiB": null
+        }
+      ],
+      "afterMeminfo": "MemTotal:        2034840 kB\nMemFree:          163532 kB\nMemAvailable:     720520 kB\nBuffers:           28780 kB\nCached:           662188 kB\n"
+    },
+    {
+      "id": "amy-long-warm-20261017-235123",
+      "model": "amy",
+      "sample": "long",
+      "text": "Let's have a quiet film night. I can help you find a comedy, turn the volume down, or set a timer for the popcorn. If you already know what you want to watch, just tell me the title. I'll take care of the rest.",
+      "engine": "com.k2fsa.sherpa.onnx.tts.engine",
+      "initMs": 0,
+      "synthesisMs": 15805,
+      "firstAudioMs": 2599,
+      "engineStartMs": 3,
+      "audioSeconds": 13.056,
+      "realTimeFactor": 1.2105545343137254,
+      "error": null,
+      "audioBytes": 417836,
+      "boundEngine": "com.k2fsa.sherpa.onnx.tts.engine",
+      "temperature": "warm",
+      "sampledPeakEnginePssKiB": 182691,
+      "memorySamples": [
+        {
+          "elapsed": 0.522,
+          "pssKiB": 115467,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 1.386,
+          "pssKiB": 119099,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 2.239,
+          "pssKiB": 139007,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 3.149,
+          "pssKiB": 149795,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 4.016,
+          "pssKiB": 117091,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 4.867,
+          "pssKiB": 118763,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 5.691,
+          "pssKiB": 130139,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 6.528,
+          "pssKiB": 146355,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 7.417,
+          "pssKiB": 151011,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 8.366,
+          "pssKiB": 171063,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 9.252,
+          "pssKiB": 182691,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 10.268,
+          "pssKiB": 118016,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 11.217,
+          "pssKiB": 131603,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 12.111,
+          "pssKiB": 140175,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 12.968,
+          "pssKiB": 157375,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 13.898,
+          "pssKiB": 156147,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 14.793,
+          "pssKiB": 118395,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 15.622,
+          "pssKiB": 138779,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 16.533,
+          "pssKiB": 143131,
+          "rssKiB": null
+        }
+      ],
+      "afterMeminfo": "MemTotal:        2034840 kB\nMemFree:          308160 kB\nMemAvailable:     803396 kB\nBuffers:           28976 kB\nCached:           600572 kB\n"
+    }
+  ],
+  "systemDefaultTtsAfter": "null",
+  "defaultTtsUnchanged": true
+}

@@ -1,0 +1,109 @@
+{
+  "timestamp": "20261017-235613",
+  "implementation": "direct-jni",
+  "deviceFacts": "MIBOX4\narmeabi-v7a,armeabi\n28\nMemTotal:        2034840 kB\nMemFree:          337344 kB\nMemAvailable:     835316 kB\nBuffers:           29372 kB\nCached:           602904 kB\nFilesystem      1K-blocks    Used Available Use% Mounted on\n/dev/block/data   5292456 4271916    971388  82% /data\n",
+  "systemDefaultTtsBefore": "null",
+  "originalActivity": "mResumedActivity: ActivityRecord{90817a1 u0 com.google.android.tvlauncher/.MainActivity t2098}",
+  "models": {
+    "nano": {
+      "name": "kitten-nano-en-v0_8-int8",
+      "apkBytes": 53578066,
+      "sha256": "cd91e7e9924b4303fd3311a364159a9e687806527c30a36ce8a0f165e61c8e1c",
+      "publisherCertificateSha256": "030a90bdd6e4c5eef1e161acfa6455a912c45cb2423b64df449ca88fdee097bb",
+      "source": "https://k2-fsa.github.io/sherpa/onnx/tts/all/English/kitten-nano-en-v0_8-int8.html"
+    }
+  },
+  "results": [
+    {
+      "id": "nano-short-cold-20261017-235613",
+      "model": "nano",
+      "sample": "short",
+      "text": "Hi! I'm your DuoBuddy. Shall we find something good to watch?",
+      "engine": "com.k2fsa.sherpa.onnx.tts.engine",
+      "initMs": 10589,
+      "synthesisMs": 9,
+      "directNative": true,
+      "speaker": 1,
+      "threads": 2,
+      "firstAudioMs": -1,
+      "engineStartMs": -1,
+      "audioSeconds": 0,
+      "realTimeFactor": null,
+      "error": "The engine produced no playable WAV audio",
+      "audioBytes": 44,
+      "boundEngine": "bundled Sherpa-ONNX JNI (no Android TTS service)",
+      "temperature": "cold",
+      "sampledPeakEnginePssKiB": 128212,
+      "memorySamples": [
+        {
+          "elapsed": 1.723,
+          "pssKiB": 5742,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 2.59,
+          "pssKiB": 72919,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 3.43,
+          "pssKiB": 97378,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 4.244,
+          "pssKiB": 108694,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 5.081,
+          "pssKiB": 104397,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 5.902,
+          "pssKiB": 104681,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 6.727,
+          "pssKiB": 104745,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 7.641,
+          "pssKiB": 104946,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 8.461,
+          "pssKiB": 108226,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 9.39,
+          "pssKiB": 106595,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 10.202,
+          "pssKiB": 107751,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 11.001,
+          "pssKiB": 107684,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 11.832,
+          "pssKiB": 128212,
+          "rssKiB": null
+        }
+      ],
+      "afterMeminfo": "MemTotal:        2034840 kB\nMemFree:          165476 kB\nMemAvailable:     753260 kB\nBuffers:           30176 kB\nCached:           691172 kB\n"
+    }
+  ],
+  "systemDefaultTtsAfter": "null",
+  "defaultTtsUnchanged": true
+}

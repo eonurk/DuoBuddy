@@ -1,0 +1,122 @@
+{
+  "timestamp": "20261018-000341",
+  "implementation": "direct-jni",
+  "deviceFacts": "MIBOX4\narmeabi-v7a,armeabi\n28\nMemTotal:        2034840 kB\nMemFree:          269172 kB\nMemAvailable:     860856 kB\nBuffers:           29152 kB\nCached:           693092 kB\nFilesystem      1K-blocks    Used Available Use% Mounted on\n/dev/block/data   5292456 4410592    832712  85% /data\n",
+  "systemDefaultTtsBefore": "null",
+  "originalActivity": "mResumedActivity: ActivityRecord{90817a1 u0 com.google.android.tvlauncher/.MainActivity t2098}",
+  "models": {
+    "nano-fp32": {
+      "name": "kitten-nano-en-v0_8-fp32",
+      "upstreamApkBytes": 53578066,
+      "upstreamApkSha256": "cd91e7e9924b4303fd3311a364159a9e687806527c30a36ce8a0f165e61c8e1c",
+      "publisherCertificateSha256": "030a90bdd6e4c5eef1e161acfa6455a912c45cb2423b64df449ca88fdee097bb",
+      "source": "https://k2-fsa.github.io/sherpa/onnx/tts/all/English/kitten-nano-en-v0_8-fp32.html",
+      "installedApkBytes": 80368521,
+      "installedApkSha256": "7f0e4f6c1ff2513ff866a48dee026feababa4a49189febc8780c7cb40a61bd89"
+    }
+  },
+  "results": [
+    {
+      "id": "nano-fp32-short-cold-20261018-000341",
+      "model": "nano-fp32",
+      "sample": "short",
+      "text": "Hi! I'm your DuoBuddy. Shall we find something good to watch?",
+      "engine": "com.k2fsa.sherpa.onnx.tts.engine",
+      "initMs": 7671,
+      "synthesisMs": 15385,
+      "directNative": true,
+      "speaker": 1,
+      "threads": 4,
+      "firstAudioMs": -1,
+      "engineStartMs": -1,
+      "audioSeconds": 6.106083333333333,
+      "realTimeFactor": 2.519618413330968,
+      "error": null,
+      "audioBytes": 293136,
+      "boundEngine": "bundled Sherpa-ONNX JNI (no Android TTS service)",
+      "temperature": "cold",
+      "memoryProcess": "co.duobook.voicelab",
+      "sampledPeakEnginePssKiB": 165208,
+      "memorySamples": [
+        {
+          "elapsed": 0.706,
+          "pssKiB": 5022,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 4.638,
+          "pssKiB": 155496,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 9.44,
+          "pssKiB": 165208,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 13.446,
+          "pssKiB": 152464,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 17.564,
+          "pssKiB": 128904,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 22.125,
+          "pssKiB": 152276,
+          "rssKiB": null
+        }
+      ],
+      "afterMeminfo": "MemTotal:        2034840 kB\nMemFree:          164800 kB\nMemAvailable:     757260 kB\nBuffers:           29360 kB\nCached:           707564 kB\n"
+    },
+    {
+      "id": "nano-fp32-short-warm-20261018-000341",
+      "model": "nano-fp32",
+      "sample": "short",
+      "text": "Hi! I'm your DuoBuddy. Shall we find something good to watch?",
+      "engine": "com.k2fsa.sherpa.onnx.tts.engine",
+      "initMs": 0,
+      "synthesisMs": 14694,
+      "directNative": true,
+      "speaker": 1,
+      "threads": 4,
+      "firstAudioMs": -1,
+      "engineStartMs": -1,
+      "audioSeconds": 6.106,
+      "realTimeFactor": 2.4064854241729448,
+      "error": null,
+      "audioBytes": 293132,
+      "boundEngine": "bundled Sherpa-ONNX JNI (no Android TTS service)",
+      "temperature": "warm",
+      "memoryProcess": "co.duobook.voicelab",
+      "sampledPeakEnginePssKiB": 154959,
+      "memorySamples": [
+        {
+          "elapsed": 0.768,
+          "pssKiB": 105806,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 4.997,
+          "pssKiB": 154510,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 9.085,
+          "pssKiB": 154959,
+          "rssKiB": null
+        },
+        {
+          "elapsed": 13.575,
+          "pssKiB": 154519,
+          "rssKiB": null
+        }
+      ],
+      "afterMeminfo": "MemTotal:        2034840 kB\nMemFree:          146204 kB\nMemAvailable:     738936 kB\nBuffers:           29368 kB\nCached:           706300 kB\n"
+    }
+  ],
+  "systemDefaultTtsAfter": "null",
+  "defaultTtsUnchanged": true
+}

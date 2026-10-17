@@ -1,0 +1,24 @@
+DuoBuddy embedded English speech
+
+Voice: en_US-amy-low, 16 kHz, from rhasspy/piper-voices, packaged by sherpa-onnx.
+The upstream MODEL_CARD and model configuration are included alongside the ONNX file.
+https://huggingface.co/rhasspy/piper-voices/tree/main/en/en_US/amy/low
+Dataset attribution: https://github.com/MycroftAI/mimic3-voices
+
+Runtime: sherpa-onnx 1.13.8 (Apache-2.0), ONNX Runtime (MIT), Kotlin (Apache-2.0).
+The publisher APK also includes AndroidX/Compose runtime classes (Apache-2.0).
+Only runtime DEX, speech assets and native libraries are reused; the publisher's
+manifest, app activities, services, resources and permissions are not installed.
+https://github.com/k2-fsa/sherpa-onnx/tree/v1.13.8/android/SherpaOnnxTtsEngine
+https://github.com/microsoft/onnxruntime
+https://github.com/JetBrains/kotlin
+https://android.googlesource.com/platform/frameworks/support/
+
+Pronunciation: csukuangfj/piper-phonemize and eSpeak NG (GPL-3.0).
+https://github.com/csukuangfj/piper-phonemize
+https://github.com/espeak-ng/espeak-ng
+The original rhasspy/piper-phonemize license is also included for attribution.
+
+Copies of upstream licenses and ONNX Runtime third-party notices are included here.
+The exact verified binary inputs and checksums are recorded in bundle-piper.py.
+This bundle includes GPL code; it is not an exclusively Apache/MIT bundle.
