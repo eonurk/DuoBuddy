@@ -67,7 +67,7 @@ else console.log('');
   assert.equal(page.status, 200); assert.match(page.data, /id="tv-config"/);
   const connected = await call('/admin/tv', {address: '192.168.1.30:40234', remoteName: 'NVIDIA Remote', pairAddress: '192.168.1.30:37123', pairCode: '123456'});
   assert.equal(connected.status, 200, JSON.stringify(connected.data));
-  assert.equal(connected.data.bundled, 8); assert.equal(connected.data.installed, 3);
+  assert.equal(connected.data.bundled, 9); assert.equal(connected.data.installed, 3);
   assert.match(connected.data.tv, /Google TV Streamer/);
   assert.equal((await call('/admin/tv/install', {})).status, 200);
   assert.equal((await call('/admin/tv/screensaver', {})).status, 200);

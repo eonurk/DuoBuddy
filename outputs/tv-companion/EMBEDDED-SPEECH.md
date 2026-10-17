@@ -28,8 +28,20 @@ Full license notices are shipped in `android/assets/licenses/piper/`; the upstre
 - The controller detects TV v0.7+ through the existing version header and sends `speechText`, with no generated WAV. This also covers acknowledgements, timer announcements and voice previews. Older TV builds retain the existing Mac/remote audio path. New TV builds can synthesize final reply text from older controllers, although those older controllers will still spend time preparing their remote audio.
 - The first controller snapshot records its reply ID without replaying a previous conversation.
 
+## Reply delivery (TV v0.8)
+
+- The TV holds an authenticated state request open for up to 20 seconds. A revision change returns the new state immediately and the TV reconnects, without the previous 1.3-second delay. A dedicated, cancellable connection leaves chat and Stop requests free. Older controllers retain polling; older TV builds retain ordinary state GETs.
+- A controller session ID makes reconnects distinguish a restarted controller from an unchanged revision. Disconnects and heartbeats release held requests; connection failures retry after 1.3 seconds.
+- The controller refreshes TV context in the background every five seconds while idle. Ordinary chat uses a snapshot no more than ten seconds old, or explicitly reports missing context to the model. TV tools continue to read current state when required; changing TVs clears cached context.
+- New TVs check whether playback permits follow-up listening after speech finishes. The check is tied to the reply ID and fails closed on missing TV state, a new request or Stop. It no longer delays publishing the spoken reply. Older TV builds keep the check before reply publication.
+- `tests/reply-latency.test.mjs` verifies that a simulated 2.2-second status read does not block an ordinary reply, along with authenticated delivery, restart recovery and follow-up cancellation. Model and voice calls in this test are local fixtures.
+
 ## Verification
+
+TV v0.9 also keeps a request open across premature recognition results. The initial speech window is 12 seconds (10 seconds for a follow-up), with the existing 30-second session bound. Completed segments are retained while a healthy recognizer is reused for continuation, and the combined request is submitted after a 2.5-second quiet window following the last final segment. New speech and partial results postpone submission until the engine finishes that segment. Talk again explicitly finishes without the continuation delay. Empty retries, stale callbacks, shutdown and timeout remain bounded and covered by `ListeningSessionTest.java`. The recognizer receives longer silence hints as well, but the continuation behavior does not rely on it honoring them ([Android recognition extras](https://developer.android.com/reference/android/speech/RecognizerIntent#EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS)).
 
 Run `node --test outputs/tv-companion/tests/*.test.mjs` from the workspace root. The tests cover atomic model installation, corruption/truncation/cancellation, pinned catalogue metadata, speech cancellation, concrete JNI callback signature, v0.7 text reply negotiation, Stop clearing text, older-TV compatibility, pairing and the existing controller behavior.
 
 Device playback measurements and final APK checksum are recorded after the physical smoke test. They are exploratory observations, not latency guarantees under simultaneous video playback.
+
+On 2026-10-18, v0.8 was rebuilt, signature-verified and installed on the Mi Box, and the source controller was restarted with its existing configuration. All 76 tests passed. One live short greeting with the selected Amy Low voice produced reply text in 1,567 ms, a matching TV receipt log at 1,606 ms, and the first audio log at 4,018 ms from submission (2,366 ms of voice preparation). These are Mac-observed timings from one request, including log transport, rather than a controlled before/after benchmark. Timing evidence is in the ignored `work/reply-speed-smoke.json` and `work/reply-speed-controller.log` files.

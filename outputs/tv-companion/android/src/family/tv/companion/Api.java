@@ -13,7 +13,7 @@ public final class Api {
     static final ExecutorService IO=Executors.newFixedThreadPool(3);
     public interface Callback {void done(JSONObject value, String error);}
     /** Reported to the controller so it knows whether this build can listen in place. */
-    static final int VERSION=8;
+    static final int VERSION=9;
     static SharedPreferences prefs(Context c){return c.getSharedPreferences("pairing",Context.MODE_PRIVATE);}
     static boolean paired(Context c){return !prefs(c).getString("server","").isEmpty()&&!prefs(c).getString("token","").isEmpty();}
     static void request(Context c,String path,JSONObject data,Callback callback){
@@ -46,7 +46,7 @@ public final class Api {
                 if(!closed)main.post(()->{if(!closed)callback.done(result,failure);});
             });
         }
-        synchronized void close(){closed=true;if(connection!=null)connection.disconnect();worker.shutdownNow();}
+        void close(){HttpURLConnection old;synchronized(this){closed=true;old=connection;connection=null;}if(old!=null)old.disconnect();worker.shutdownNow();}
     }
     private static JSONObject blocking(Context c,String path,JSONObject data,StateWatch watch)throws Exception{
         String server=prefs(c).getString("server","");String token=prefs(c).getString("token","");

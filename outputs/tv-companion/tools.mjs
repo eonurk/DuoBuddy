@@ -11,13 +11,13 @@ function fn(name, description, properties = {}) {
 }
 
 export const TOOLS = [
-  fn('open_app', 'Open any installed TV app by name (e.g. YouTube, Netflix, Spotify, Plex, VLC, Prime Video, Stremio, a browser). Use the installed-app list in your context.',
+  fn('open_app', 'Open an app from the installed-app list by name or alias.',
     {app: {type: 'string', description: 'App name or alias.'}}),
-  fn('search_app', 'Search inside an app that supports it: YouTube, Netflix, Spotify, Prime Video, Stremio, Play Store. Opens the app on the search results. Verify with read_screen.',
+  fn('search_app', 'Search YouTube, Netflix, Spotify, Prime Video, Stremio or Play Store. Verify results with read_screen. Spotify instead plays the best match: call once, then verify with tv_status. For other apps use open_app, remote, read_screen and type_text.',
     {app: {type: 'string'}, query: {type: 'string', description: 'Title, artist, topic or phrase to search for.'}}),
-  fn('open_url', 'Open an https link; Android picks the app that handles it (e.g. a YouTube link opens in YouTube).',
+  fn('open_url', 'Open an https link in its handling app.',
     {url: {type: 'string'}}),
-  fn('remote', 'Press a remote-control button, optionally several times in a row (menus, scrolling, selecting). Also sleep/wake the TV.',
+  fn('remote', 'Navigate menus with remote buttons; use times to scroll repeatedly. Sleep/wake the TV; "turn it off" or "go to sleep" means sleep.',
     {key: {type: 'string', enum: Object.keys(KEYS).filter(k => !k.startsWith('volume') && k !== 'mute')}, times: nullable('integer', {description: 'Repeat count 1–25. Null for once.'})}),
   fn('media', 'Control whatever is playing: play, pause, toggle, next/previous track or episode, stop, rewind or fast-forward.',
     {command: {type: 'string', enum: Object.keys(MEDIA_KEYS)}}),
@@ -28,15 +28,15 @@ export const TOOLS = [
   fn('type_text', 'Type into the focused text field, optionally pressing Enter afterwards.',
     {text: {type: 'string'}, submit: {type: 'boolean'}}),
   fn('wait', 'Wait for an app to load before looking again.', {seconds: {type: 'integer', description: '1–8'}}),
-  fn('tv_status', 'Refresh what is on screen, what is playing and the volume. Your context already has this at the start of the turn; call it after changes.'),
+  fn('tv_status', 'Refresh foreground app, playback title/state and volume. Prefer this over screenshots for what is playing; refresh stale or missing context and check playback after changes.'),
   fn('timer', 'Set, list or cancel timers and reminders. When a timer fires, DuoBuddy speaks the label.',
     {action: {type: 'string', enum: ['set', 'list', 'cancel']}, seconds: nullable('integer'), label: nullable('string'), id: nullable('integer')}),
   fn('memory', 'Remember, list or forget short notes. Only when the user explicitly asks you to remember or forget something. Notes go to the person at the TV when one has said who they are, otherwise to the household.',
     {action: {type: 'string', enum: ['remember', 'list', 'forget']}, note: nullable('string', {description: 'Note to save, or text matching notes to forget.'}),
       scope: nullable('string', {enum: ['person', 'household', null], description: 'household for things about everyone ("we", "the kids"), person for the speaker\'s own preferences. Null to decide automatically.'})}),
-  fn('profile', 'Who is at the TV. switch when someone says who they are ("it\'s Mum", "this is Onur"); leave when they say they are going or hand over; list to name everyone DuoBuddy knows; birthday to save someone\'s birthday.',
+  fn('profile', 'Who is at the TV. switch and greet by name when someone identifies themselves ("it\'s Mum", "this is Onur"); leave when they say they are going or hand over; list to name everyone DuoBuddy knows; birthday to save someone\'s birthday.',
     {action: {type: 'string', enum: ['switch', 'leave', 'list', 'birthday']}, name: nullable('string', {description: 'First name or family title, e.g. Mum.'}), birthday: nullable('string', {description: 'MM-DD for the birthday action.'})}),
-  fn('screensaver', 'Show DuoBuddy\'s calm screensaver dashboard (clock, weather, word of the day, notes) now. Any remote button closes it.')
+  fn('screensaver', 'Show the clock/weather dashboard for "screensaver", "ambient mode" or "just show the clock". Any remote button closes it.')
 ];
 
 export const WEB_SEARCH_TOOL = {type: 'web_search'};

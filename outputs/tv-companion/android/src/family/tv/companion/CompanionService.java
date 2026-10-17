@@ -123,21 +123,27 @@ public final class CompanionService extends Service {
     }
     private final Runnable retryListening=()->{if(!destroyed&&listenSession.active())beginRecognition();};
     private final Runnable listenTimeout=()->finishListening();
-    private final Runnable finishTimeout=()->endListening("Listening timed out. Please try again.");
+    private final Runnable finishTimeout=()->{if(!listenSession.text().isEmpty())submitTranscript();else endListening("Listening timed out. Please try again.");};
+    private final Runnable commitListening=new Runnable(){public void run(){
+        if(destroyed||!listenSession.active())return;
+        if(listenSession.submit(SystemClock.uptimeMillis()))submitTranscript();
+        else handler.postDelayed(this,Math.max(100,listenSession.pauseRemaining(SystemClock.uptimeMillis())));
+    }};
     private void releaseRecognizer(){
         SpeechRecognizer old=recognizer;recognizer=null;
         if(old!=null){try{old.cancel();}catch(Exception ignored){}old.destroy();}
     }
     private void finishListening(){
         if(!listenSession.active())return;
-        listenSession.stop();handler.removeCallbacks(retryListening);handler.removeCallbacks(listenTimeout);
+        listenSession.stop();handler.removeCallbacks(retryListening);handler.removeCallbacks(listenTimeout);handler.removeCallbacks(commitListening);
+        if(listenSession.hasResult()&&!listenSession.awaitingResult()){submitTranscript();return;}
         if(recognizer==null){endListening("");return;}
         android.util.Log.i("BuddyVoice","Finishing speech input");
         try{recognizer.stopListening();handler.removeCallbacks(finishTimeout);handler.postDelayed(finishTimeout,3000);}
         catch(Exception e){endListening("Microphone unavailable. Please try again.");}
     }
     private void clearListening(){
-        listenSession.close();handler.removeCallbacks(retryListening);handler.removeCallbacks(listenTimeout);handler.removeCallbacks(finishTimeout);
+        listenSession.close();handler.removeCallbacks(retryListening);handler.removeCallbacks(listenTimeout);handler.removeCallbacks(finishTimeout);handler.removeCallbacks(commitListening);
         releaseRecognizer();listening=false;
     }
     private void endListening(String error){
@@ -150,9 +156,14 @@ public final class CompanionService extends Service {
         boolean empty=error==SpeechRecognizer.ERROR_NO_MATCH||error==SpeechRecognizer.ERROR_SPEECH_TIMEOUT;
         boolean transientFailure=error==SpeechRecognizer.ERROR_RECOGNIZER_BUSY||error==SpeechRecognizer.ERROR_AUDIO||error==SpeechRecognizer.ERROR_CLIENT;
         android.util.Log.i("BuddyVoice","Speech error "+error);
+        if(empty){
+            if(listenSession.stopping()&&!listenSession.text().isEmpty()){submitTranscript();return;}
+            listenSession.emptyResult();
+            if(listenSession.hasResult()&&(listenSession.stopping()||listenSession.pauseRemaining(SystemClock.uptimeMillis())==0)){submitTranscript();return;}
+        }
         if(listenSession.retry(SystemClock.uptimeMillis(),empty,transientFailure)){
             // Invalidate this listener before cancellation can deliver stale callbacks.
-            listenSession.attempt(SystemClock.uptimeMillis());releaseRecognizer();heard="";
+            listenSession.attempt(SystemClock.uptimeMillis());releaseRecognizer();heard=listenSession.text();
             android.util.Log.i("BuddyVoice","Speech input ended early; retrying");
             handler.postDelayed(retryListening,400);changed();return;
         }
@@ -160,12 +171,12 @@ public final class CompanionService extends Service {
     }
     private void beginRecognition(){
         final int attempt=listenSession.attempt(SystemClock.uptimeMillis());
-        releaseRecognizer();
         try{
-            recognizer=SpeechRecognizer.createSpeechRecognizer(this);
+            // Reuse a healthy recognizer after a final result; errors still recreate it.
+            if(recognizer==null)recognizer=SpeechRecognizer.createSpeechRecognizer(this);
             recognizer.setRecognitionListener(new RecognitionListener(){
                 public void onReadyForSpeech(Bundle b){if(!listenSession.current(attempt)||destroyed)return;listenSession.ready(SystemClock.uptimeMillis());android.util.Log.i("BuddyVoice","Speech input ready");listening=true;presence("listening");changed();}
-                public void onBeginningOfSpeech(){if(listenSession.current(attempt))android.util.Log.i("BuddyVoice","Speech started");}
+                public void onBeginningOfSpeech(){if(listenSession.current(attempt)){listenSession.speech(SystemClock.uptimeMillis());android.util.Log.i("BuddyVoice","Speech started");}}
                 public void onRmsChanged(float r){}public void onBufferReceived(byte[] b){}public void onEvent(int e,Bundle b){}
                 public void onEndOfSpeech(){if(listenSession.current(attempt))android.util.Log.i("BuddyVoice","Speech endpoint reached");}
                 public void onError(int e){recognitionFailed(attempt,e);}
@@ -174,16 +185,28 @@ public final class CompanionService extends Service {
                     ArrayList<String> results=b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                     String text=results==null||results.isEmpty()?"":results.get(0).trim();
                     if(text.isEmpty()){recognitionFailed(attempt,SpeechRecognizer.ERROR_NO_MATCH);return;}
-                    android.util.Log.i("BuddyVoice","Speech transcription received");clearListening();sendChat(text);
+                    android.util.Log.i("BuddyVoice","Speech segment received");
+                    listenSession.result(SystemClock.uptimeMillis(),text);heard=listenSession.text();
+                    if(listenSession.stopping()){submitTranscript();return;}
+                    // Do not submit a whole request just because the engine ended a short segment.
+                    listenSession.attempt(SystemClock.uptimeMillis());
+                    handler.removeCallbacks(commitListening);handler.postDelayed(commitListening,ListeningSession.CONTINUATION_MS);
+                    handler.removeCallbacks(retryListening);handler.postDelayed(retryListening,150);changed();
                 }
-                public void onPartialResults(Bundle b){if(!listenSession.current(attempt)||destroyed)return;ArrayList<String> r=b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);if(r!=null&&!r.isEmpty()){heard=r.get(0);changed();}}
+                public void onPartialResults(Bundle b){if(!listenSession.current(attempt)||destroyed)return;ArrayList<String> r=b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);if(r!=null&&!r.isEmpty()){listenSession.partial(SystemClock.uptimeMillis(),r.get(0));heard=listenSession.text();changed();}}
             });
             Intent i=new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);i.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);i.putExtra(RecognizerIntent.EXTRA_LANGUAGE,"en-US");i.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS,true);i.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,1);
             // These are hints: the bounded retry window also handles engines that ignore them.
-            i.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS,2000L);
-            i.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS,1500L);
+            i.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS,3000L);
+            i.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS,2500L);
             recognizer.startListening(i);
         }catch(Exception e){recognitionFailed(attempt,SpeechRecognizer.ERROR_CLIENT);}
+    }
+    private void submitTranscript(){
+        if(!listenSession.active())return;
+        String text=listenSession.text();
+        if(text.isEmpty()){endListening(followUpListen?"":"I didn’t catch that. Try again.");return;}
+        android.util.Log.i("BuddyVoice","Speech transcription submitted");clearListening();sendChat(text);
     }
     private void sendChat(String text){
         stopAudio();heard="";localError="";
@@ -210,6 +233,7 @@ public final class CompanionService extends Service {
                 if(lastReply==null)lastReply=id;
                 else if(!id.equals(lastReply)){
                     lastReply=id;boolean finalReply="idle".equals(data.optString("phase",""))&&!data.optString("reply","").isEmpty();
+                    if(finalReply)android.util.Log.i("BuddyVoice","Reply received: id="+id+"; revision="+stateRevision);
                     autoListen=finalReply&&data.optBoolean("followUp",false);
                     // The caption stays while Buddy speaks and leaves shortly after (see finishCaption);
                     // with no audio to wait for, it shows for a few seconds of reading time.
