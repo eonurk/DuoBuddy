@@ -1,0 +1,62 @@
+MEDIA SESSION SERVICE (dumpsys media_session)
+
+7 sessions listeners.
+Global priority session is null
+User Records:
+Record for full_user=0
+  Volume key long-press listener: null
+  Volume key long-press listener package: 
+  Media key listener: null
+  Media key listener package: 
+  Callback: android.media.session.ICallback$Stub$Proxy@c75a6f8
+  Last MediaButtonReceiver: PendingIntent{6b69800: PendingIntentRecord{e0ee839 com.spotify.tv.android broadcastIntent}}
+  Restored MediaButtonReceiver: null
+  Media button session is com.spotify.tv.android/spotify-android-tv-media-session (userId=0)
+  Sessions Stack - have 3 sessions:
+    spotify-android-tv-media-session com.spotify.tv.android/spotify-android-tv-media-session (userId=0)
+      ownerPid=4288, ownerUid=10064, userId=0
+      package=com.spotify.tv.android
+      launchIntent=null
+      mediaButtonReceiver=PendingIntent{6b69800: PendingIntentRecord{e0ee839 com.spotify.tv.android broadcastIntent}}
+      active=true
+      flags=3
+      rating type=0
+      controllers: 7
+      state=PlaybackState {state=3, position=31272, buffered position=0, speed=1.0, updated=32603411, actions=2368383, custom actions=[], active item id=-1, error=null}
+      audioAttrs=AudioAttributes: usage=USAGE_MEDIA content=CONTENT_TYPE_UNKNOWN flags=0x0 tags= bundle=null
+      volumeType=1, controlType=2, max=0, current=0
+      metadata:size=8, description=Instant Crush (feat. Julian Casablancas), Daft Punk, Random Access Memories
+      queueTitle=null, size=0
+
+    Netflix media session com.netflix.ninja/Netflix media session (userId=0)
+      ownerPid=4815, ownerUid=10052, userId=0
+      package=com.netflix.ninja
+      launchIntent=null
+      mediaButtonReceiver=null
+      active=false
+      flags=3
+      rating type=0
+      controllers: 0
+      state=null
+      audioAttrs=AudioAttributes: usage=USAGE_MEDIA content=CONTENT_TYPE_UNKNOWN flags=0x0 tags= bundle=null
+      volumeType=1, controlType=2, max=0, current=0
+      metadata:size=0, description=null
+      queueTitle=null, size=0
+
+    starboard com.google.android.youtube.tv/starboard (userId=0)
+      ownerPid=10668, ownerUid=10046, userId=0
+      package=com.google.android.youtube.tv
+      launchIntent=null
+      mediaButtonReceiver=null
+      active=false
+      flags=3
+      rating type=0
+      controllers: 0
+      state=PlaybackState {state=0, position=-1, buffered position=0, speed=0.0, updated=31760787, actions=0, custom actions=[], active item id=-1, error=null}
+      audioAttrs=AudioAttributes: usage=USAGE_MEDIA content=CONTENT_TYPE_UNKNOWN flags=0x0 tags= bundle=null
+      volumeType=1, controlType=2, max=0, current=0
+      metadata:size=0, description=null, null, null
+      queueTitle=null, size=0
+
+Audio playback (lastly played comes first)
+  uid=10064 packages=com.spotify.tv.android 

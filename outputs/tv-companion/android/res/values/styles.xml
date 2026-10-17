@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- DuoBook: white surfaces, slate text, orange accent. -->
+  <style name="DuoTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
+    <item name="android:colorAccent">#f97316</item>
+    <item name="android:colorPrimary">#f97316</item>
+    <item name="android:colorControlActivated">#f97316</item>
+    <item name="android:windowBackground">@android:color/white</item>
+    <item name="android:textColorPrimary">#1e293b</item>
+  </style>
+  <style name="DuoDialog" parent="@android:style/Theme.Material.Light.Dialog.Alert">
+    <item name="android:colorAccent">#f97316</item>
+    <item name="android:colorControlActivated">#f97316</item>
+    <item name="android:windowBackground">@drawable/duo_dialog</item>
+    <item name="android:textColorPrimary">#1e293b</item>
+    <item name="android:textColorSecondary">#64748b</item>
+  </style>
+</resources>

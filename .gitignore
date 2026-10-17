@@ -1,0 +1,9 @@
+.DS_Store
+__pycache__/
+*.pyc
+
+# Local SDKs, build products, backups, and private controller settings.
+work/
+outputs/tv-companion/*.apk
+outputs/tv-companion/*.apk.idsig
+

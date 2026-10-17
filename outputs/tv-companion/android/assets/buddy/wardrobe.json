@@ -1,0 +1,200 @@
+[
+ {
+  "id": "specs",
+  "slot": "eyewear",
+  "name": "Round glasses",
+  "hidesSprout": false
+ },
+ {
+  "id": "shades",
+  "slot": "eyewear",
+  "name": "Sunglasses",
+  "hidesSprout": false
+ },
+ {
+  "id": "monocle",
+  "slot": "eyewear",
+  "name": "Monocle",
+  "hidesSprout": false
+ },
+ {
+  "id": "tie",
+  "slot": "neck",
+  "name": "Necktie",
+  "hidesSprout": false
+ },
+ {
+  "id": "scarf",
+  "slot": "neck",
+  "name": "Scarf",
+  "hidesSprout": false
+ },
+ {
+  "id": "medal",
+  "slot": "neck",
+  "name": "Medal",
+  "hidesSprout": false
+ },
+ {
+  "id": "pearls",
+  "slot": "neck",
+  "name": "Pearls",
+  "hidesSprout": false
+ },
+ {
+  "id": "bowtie",
+  "slot": "neck",
+  "name": "Bow tie",
+  "hidesSprout": false
+ },
+ {
+  "id": "beanie",
+  "slot": "hat",
+  "name": "Beanie",
+  "hidesSprout": true
+ },
+ {
+  "id": "halo",
+  "slot": "hat",
+  "name": "Halo",
+  "hidesSprout": true
+ },
+ {
+  "id": "grad",
+  "slot": "hat",
+  "name": "Grad cap",
+  "hidesSprout": true
+ },
+ {
+  "id": "laurel",
+  "slot": "hat",
+  "name": "Laurel",
+  "hidesSprout": false
+ },
+ {
+  "id": "crown",
+  "slot": "hat",
+  "name": "Crown",
+  "hidesSprout": true
+ },
+ {
+  "id": "party",
+  "slot": "hat",
+  "name": "Party hat",
+  "hidesSprout": false
+ },
+ {
+  "id": "wizard",
+  "slot": "hat",
+  "name": "Wizard",
+  "hidesSprout": true
+ },
+ {
+  "id": "bookcharm",
+  "slot": "neck",
+  "name": "Book charm",
+  "hidesSprout": false
+ },
+ {
+  "id": "headphones",
+  "slot": "eyewear",
+  "name": "Headphones",
+  "hidesSprout": false
+ },
+ {
+  "id": "authorberet",
+  "slot": "hat",
+  "name": "Beret",
+  "hidesSprout": true
+ },
+ {
+  "id": "globecharm",
+  "slot": "neck",
+  "name": "Globe",
+  "hidesSprout": false
+ },
+ {
+  "id": "owlglasses",
+  "slot": "eyewear",
+  "name": "Owl specs",
+  "hidesSprout": false
+ },
+ {
+  "id": "sunrisecrown",
+  "slot": "hat",
+  "name": "Sunrise",
+  "hidesSprout": false
+ },
+ {
+  "id": "microphone",
+  "slot": "neck",
+  "name": "Mic",
+  "hidesSprout": false
+ },
+ {
+  "id": "splitteeth",
+  "slot": "face",
+  "name": "Tooth gap",
+  "hidesSprout": false
+ },
+ {
+  "id": "freckles",
+  "slot": "face",
+  "name": "Freckles",
+  "hidesSprout": false
+ },
+ {
+  "id": "beautymark",
+  "slot": "face",
+  "name": "Beauty mark",
+  "hidesSprout": false
+ },
+ {
+  "id": "moustache",
+  "slot": "face",
+  "name": "Moustache",
+  "hidesSprout": false
+ },
+ {
+  "id": "starcheek",
+  "slot": "face",
+  "name": "Star",
+  "hidesSprout": false
+ },
+ {
+  "id": "pumpkin",
+  "slot": "hat",
+  "name": "Pumpkin",
+  "hidesSprout": true
+ },
+ {
+  "id": "santa",
+  "slot": "hat",
+  "name": "Santa",
+  "hidesSprout": true
+ },
+ {
+  "id": "hearts",
+  "slot": "eyewear",
+  "name": "Hearts",
+  "hidesSprout": false
+ },
+ {
+  "id": "witchhat",
+  "slot": "hat",
+  "name": "Witch hat",
+  "hidesSprout": true
+ },
+ {
+  "id": "spookyscarf",
+  "slot": "neck",
+  "name": "Spooky scarf",
+  "hidesSprout": false
+ },
+ {
+  "id": "festivescarf",
+  "slot": "neck",
+  "name": "Festive scarf",
+  "hidesSprout": false
+ }
+]
