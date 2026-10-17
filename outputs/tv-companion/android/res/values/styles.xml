@@ -15,4 +15,21 @@
     <item name="android:textColorPrimary">#1e293b</item>
     <item name="android:textColorSecondary">#64748b</item>
   </style>
+  <style name="DuoNightTheme" parent="@android:style/Theme.Material.NoActionBar">
+    <item name="android:colorAccent">#fb923c</item>
+    <item name="android:colorPrimary">#f97316</item>
+    <item name="android:colorControlActivated">#fb923c</item>
+    <item name="android:windowBackground">@color/night_canvas</item>
+    <item name="android:colorBackground">#11151c</item>
+    <item name="android:textColorPrimary">#e5e9f0</item>
+    <item name="android:textColorSecondary">#a8b3c2</item>
+  </style>
+  <style name="DuoNightDialog" parent="@android:style/Theme.Material.Dialog.Alert">
+    <item name="android:colorAccent">#fb923c</item>
+    <item name="android:colorControlActivated">#fb923c</item>
+    <item name="android:colorBackground">#202731</item>
+    <item name="android:windowBackground">@drawable/duo_dialog_night</item>
+    <item name="android:textColorPrimary">#e5e9f0</item>
+    <item name="android:textColorSecondary">#a8b3c2</item>
+  </style>
 </resources>

@@ -111,7 +111,7 @@ export class TvController {
     const m = (await this.shell('dumpsys package ' + COMPANION + ' | grep versionCode')).match(/versionCode=(\d+)/);
     return m ? Number(m[1]) : 0;
   }
-  // Installs or updates Buddy, allows its microphone and overlay captions, pairs it with this
+  // Installs or updates DuoBuddy, allows its microphone and overlay captions, pairs it with this
   // controller and opens it. Everything here is something the user would otherwise do by hand.
   async installCompanion({apk, server, token}) {
     const out = await this.adb(['install', '-r', apk], {timeout: 180000});
@@ -122,11 +122,12 @@ export class TvController {
   }
   // Google TV hides third-party screensavers from its settings, so this sets it directly.
   async useBuddyScreensaver() {
-    if (!(await this.companionVersion())) throw Error('Install Buddy on this TV first.');
+    if (!(await this.companionVersion())) throw Error('Install DuoBuddy on this TV first.');
     await this.checkedShell(`settings put secure screensaver_components ${COMPANION}/.BuddyDream`);
     await this.checkedShell('settings put secure screensaver_enabled 1');
   }
   async adb(args, {binary = false, timeout = 25000} = {}) {
+    if (!this.device) throw Error('Connect your TV on the Mac setup page first.');
     const options = {timeout, maxBuffer: 12 * 1024 * 1024, encoding: binary ? 'buffer' : 'utf8'};
     try {return (await exec(this.adbPath, ['-s', this.device, ...args], options)).stdout;}
     catch (e) {
@@ -217,7 +218,7 @@ export class TvController {
   // Exported only to holders of android.permission.DUMP, which adb shell has.
   async showAmbient() {
     const out = await this.shell('am start -n family.tv.companion/.AmbientActivity');
-    if (/Error|Exception/i.test(out)) throw Error('Update Buddy on the TV to use the screensaver.');
+    if (/Error|Exception/i.test(out)) throw Error('Update DuoBuddy on the TV to use the screensaver.');
   }
 
   async volume() {return parseVolume(await this.shell(volumeCommand('--get')));}

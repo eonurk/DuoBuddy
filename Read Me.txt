@@ -1,6 +1,6 @@
 DuoBuddy
 
-1. Double-click Start Buddy.command if the controller is not already running. Leave its Terminal window open.
+1. Double-click Start DuoBuddy.command if the controller is not already running. Leave its Terminal window open.
 2. Open the local setup link printed in that Terminal window to choose a voice and use the controls.
 3. Press and release the TV remote microphone button, wait for Listening, then speak.
 

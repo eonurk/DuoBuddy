@@ -29,14 +29,14 @@ export const TOOLS = [
     {text: {type: 'string'}, submit: {type: 'boolean'}}),
   fn('wait', 'Wait for an app to load before looking again.', {seconds: {type: 'integer', description: '1–8'}}),
   fn('tv_status', 'Refresh what is on screen, what is playing and the volume. Your context already has this at the start of the turn; call it after changes.'),
-  fn('timer', 'Set, list or cancel timers and reminders. When a timer fires, Buddy speaks the label.',
+  fn('timer', 'Set, list or cancel timers and reminders. When a timer fires, DuoBuddy speaks the label.',
     {action: {type: 'string', enum: ['set', 'list', 'cancel']}, seconds: nullable('integer'), label: nullable('string'), id: nullable('integer')}),
   fn('memory', 'Remember, list or forget short notes. Only when the user explicitly asks you to remember or forget something. Notes go to the person at the TV when one has said who they are, otherwise to the household.',
     {action: {type: 'string', enum: ['remember', 'list', 'forget']}, note: nullable('string', {description: 'Note to save, or text matching notes to forget.'}),
       scope: nullable('string', {enum: ['person', 'household', null], description: 'household for things about everyone ("we", "the kids"), person for the speaker\'s own preferences. Null to decide automatically.'})}),
-  fn('profile', 'Who is at the TV. switch when someone says who they are ("it\'s Mum", "this is Onur"); leave when they say they are going or hand over; list to name everyone Buddy knows; birthday to save someone\'s birthday.',
+  fn('profile', 'Who is at the TV. switch when someone says who they are ("it\'s Mum", "this is Onur"); leave when they say they are going or hand over; list to name everyone DuoBuddy knows; birthday to save someone\'s birthday.',
     {action: {type: 'string', enum: ['switch', 'leave', 'list', 'birthday']}, name: nullable('string', {description: 'First name or family title, e.g. Mum.'}), birthday: nullable('string', {description: 'MM-DD for the birthday action.'})}),
-  fn('screensaver', 'Show Buddy\'s calm screensaver dashboard (clock, weather, word of the day, notes) now. Any remote button closes it.')
+  fn('screensaver', 'Show DuoBuddy\'s calm screensaver dashboard (clock, weather, word of the day, notes) now. Any remote button closes it.')
 ];
 
 export const WEB_SEARCH_TOOL = {type: 'web_search'};

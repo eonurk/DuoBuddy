@@ -1,0 +1,47 @@
+DuoBuddy — early tester edition for Mac + Android TV
+
+Requires macOS 12 or later (Intel or Apple Silicon), Android TV / Google TV
+Android 8 or later, a home network shared by the Mac and TV, and your own
+OpenAI API key for conversations. Direct TV controls work without an API key.
+
+1. Extract the ZIP. Drag DuoBuddy.app into Applications.
+2. Open DuoBuddy. Its setup page opens in your browser. The DuoBuddy menu
+   in the Mac menu bar lets you reopen setup or quit the controller.
+3. On the TV, open Settings > About and select its Android build number seven
+   times. In Developer options, enable network debugging or Wireless debugging.
+4. Follow step 1 on the setup page: enter the TV address, connect, accept the
+   authorization prompt on the TV, then select Install / update DuoBuddy on this TV.
+   Wireless pairing uses a separate pairing address/port and six-digit code.
+5. Add your own OpenAI API key in step 2. Try Talk or Type on the TV.
+
+The app includes Node.js, ADB and the TV APK. No terminal, SDK, Node installation,
+extra voice server or voice download is required. Speech uses macOS's built-in
+English voice. This edition has no dependency on the developer's other computers.
+
+Keep DuoBuddy running on an awake Mac connected to the TV's network. DuoBuddy prevents
+idle sleep while running, but cannot keep working with the lid shut or Mac off.
+Allow local-network / incoming-network access if macOS asks.
+TV debugging ports may change after a reboot; update the saved address if needed.
+Some TVs require USB setup first, lack speech recognition, or restrict remote
+microphone access. Only the Xiaomi Mi Box 4 has been physically verified so far.
+
+UPDATES
+Use Check for Mac updates on the setup page. Download the replacement, quit DuoBuddy
+from the menu bar, replace the app in Applications, then open it. Select Install /
+update DuoBuddy on this TV to update the TV companion too. Settings are kept outside
+the app, in ~/Library/Application Support/DuoBuddy. Updates require a public
+GitHub release; the first locally built tester archive has not been published.
+
+EARLY BUILD SIGNING
+An ad-hoc signed build has not been notarized by Apple and may be blocked when
+downloaded. Follow macOS's Privacy & Security > Open Anyway flow only for a build
+you obtained from the developer and trust. Do not disable Gatekeeper globally.
+Developer ID signed, notarized builds can be produced with the included build script.
+
+TROUBLESHOOTING
+The DuoBuddy menu offers Show controller log and Restart DuoBuddy if it has stopped.
+Quit DuoBuddy and reopen it to restart a running controller. Another copy using ports
+18765 / 18766 must be closed first. Quitting DuoBuddy restores Google's normal remote
+button handling. No system app is removed or disabled.
+
+See Privacy.txt for data handling. Licenses are inside the app's Resources/Licenses.

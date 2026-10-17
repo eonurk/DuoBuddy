@@ -1,0 +1,32 @@
+DuoBuddy — early tester data handling
+
+Your OpenAI API key, pairing tokens, TV address and preferences stay on your Mac
+in ~/Library/Application Support/DuoBuddy. The folder is owner-only; keys
+are stored in an owner-only file. The TV stores a random pairing token, not your
+API key. The installer contains no developer API key, saved TV, household notes,
+SSH credentials or signing keystore. ADB uses its normal per-user identity under
+~/.android; the developer's ADB identity is not included.
+
+Conversations and requested TV screenshots are sent to OpenAI using your key and
+billed to your API account. Requests currently use store:true and can appear in
+your OpenAI project's Logs. Local conversation history is held in memory and
+cleared on restart. Household notes, birthdays and settings persist on your Mac
+until you remove them. Controller logs may include app titles and tool names;
+review logs before sharing them.
+
+Voice audio is generated locally by macOS. TV speech recognition depends on the
+TV's configured provider (often Google), which may process audio on its servers.
+Optional web search and title classification send relevant queries/titles to
+OpenAI. Screensaver weather uses Open-Meteo; football scores use ESPN. Checking
+for updates contacts the public eonurk/DuoBuddy repository on GitHub only when
+you press the update button. No automatic update download or installation occurs.
+
+The TV talks to the controller over plain HTTP on the home network using a
+bearer token. Use a trusted home network. Setup and key entry are restricted to
+the Mac's loopback interface. Network debugging authorizes this Mac to control
+the TV. Disable debugging on the TV if you stop using DuoBuddy.
+
+Removing the Mac app keeps settings so you can update or reinstall. To erase
+DuoBuddy's local data, quit DuoBuddy and remove the DuoBuddy folder in Application
+Support. Uninstall the companion from the TV and revoke the Mac's debugging
+authorization there if you no longer want it connected.

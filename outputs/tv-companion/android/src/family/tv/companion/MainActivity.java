@@ -15,32 +15,37 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public final class MainActivity extends Activity {
-    private FaceView face;private TextView status,reply,heard,note,greeting,talkLabel;private View talk;private EditText input;private boolean pendingAssist=false,resumed=false;private String localHeard="";
+    private Duo.Palette colors;
+    private FaceView face;private TextView status,reply,heard,note,greeting,talkLabel;private View talk;private EditText input;private boolean pendingAssist=false,resumed=false;
     private final BroadcastReceiver receiver=new BroadcastReceiver(){public void onReceive(Context c,Intent i){render();}};
-    public void onCreate(Bundle b){super.onCreate(b);getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);configure(getIntent());build();startForegroundService(new Intent(this,CompanionService.class));}
+    public void onCreate(Bundle b){colors=Duo.palette(this);setTheme(Duo.theme(this));super.onCreate(b);getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);configure(getIntent());build();startForegroundService(new Intent(this,CompanionService.class));}
     protected void onNewIntent(Intent i){super.onNewIntent(i);setIntent(i);configure(i);if(i.getBooleanExtra("voice_test",false))startForegroundService(new Intent(this,CompanionService.class).setAction("voice_test"));render();beginPendingAssist();}
     private void configure(Intent i){if(Intent.ACTION_ASSIST.equals(i.getAction()))pendingAssist=true;String server=i.getStringExtra("server"),token=i.getStringExtra("token");if(server!=null&&token!=null&&server.matches("http://[0-9.]+:[0-9]+")&&token.matches("[a-f0-9]{64}"))Api.prefs(this).edit().putString("server",server).putString("token",token).apply();}
     private void beginPendingAssist(){if(!pendingAssist||!resumed)return;pendingAssist=false;android.util.Log.i("BuddyVoice","Remote assistant invoked");new Handler(Looper.getMainLooper()).postDelayed(()->{if(resumed&&!controllerHandlesRemote()&&!CompanionService.listening)listen();},350);}
-    protected void onResume(){super.onResume();resumed=true;CompanionService.visible=true;registerReceiver(receiver,new IntentFilter("family.tv.companion.STATE"));startForegroundService(new Intent(this,CompanionService.class));render();beginPendingAssist();}
+    protected void onResume(){super.onResume();if(colors!=Duo.palette(this)){recreate();return;}resumed=true;CompanionService.visible=true;registerReceiver(receiver,new IntentFilter("family.tv.companion.STATE"));startForegroundService(new Intent(this,CompanionService.class));render();beginPendingAssist();}
     protected void onPause(){super.onPause();resumed=false;CompanionService.visible=false;try{unregisterReceiver(receiver);}catch(Exception ignored){}startForegroundService(new Intent(this,CompanionService.class));}
     private int dp(float v){return Duo.dp(this,v);}
     /** Buddy on a soft stage at left; at right a greeting, the question or Buddy's reply, suggestions, and one row of actions. */
     private void build(){
-        LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.HORIZONTAL);root.setBackgroundColor(Duo.CANVAS);root.setPadding(dp(48),dp(38),dp(56),dp(34));setContentView(root);
-        LinearLayout left=new LinearLayout(this);left.setOrientation(LinearLayout.VERTICAL);root.addView(left,new LinearLayout.LayoutParams(0,-1,.88f));
-        left.addView(Duo.text(this,"DuoBook",19,Duo.INK,700));
+        LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setBackgroundColor(colors.CANVAS);root.setPadding(dp(48),dp(38),dp(56),dp(34));setContentView(root);
+        LinearLayout brand=new LinearLayout(this);brand.setGravity(Gravity.CENTER_VERTICAL);
+        brand.addView(Duo.text(this,Duo.name(this),22,colors.INK,700),new LinearLayout.LayoutParams(0,-2,1));
+        brand.addView(Duo.quiet(this,Duo.night(this)?"moon":"sun","Appearance",()->chooseAppearance()),new LinearLayout.LayoutParams(-2,dp(44)));
+        brand.setClipChildren(false);root.addView(brand,new LinearLayout.LayoutParams(-1,dp(44)));
+        LinearLayout content=new LinearLayout(this);content.setClipChildren(false);root.addView(content,new LinearLayout.LayoutParams(-1,0,1));
+        LinearLayout left=new LinearLayout(this);left.setOrientation(LinearLayout.VERTICAL);content.addView(left,new LinearLayout.LayoutParams(0,-1,.88f));
         FrameLayout stage=new FrameLayout(this);stage.addView(new Duo.Stage(this),new FrameLayout.LayoutParams(-1,-1));
         face=new FaceView(this,true);stage.addView(face,new FrameLayout.LayoutParams(dp(300),dp(300),Gravity.CENTER));
         left.addView(stage,new LinearLayout.LayoutParams(-1,0,1));
-        status=Duo.text(this,"",14,Duo.SECOND,600);status.setGravity(Gravity.CENTER);left.addView(status,new LinearLayout.LayoutParams(-1,-2));
+        status=Duo.text(this,"",14,colors.SECOND,600);status.setGravity(Gravity.CENTER);left.addView(status,new LinearLayout.LayoutParams(-1,-2));
         note=status;
 
-        LinearLayout right=new LinearLayout(this);right.setOrientation(LinearLayout.VERTICAL);LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(0,-1,1.12f);rp.leftMargin=dp(40);root.addView(right,rp);
-        greeting=Duo.text(this,"",18,Duo.SECOND,600);LinearLayout.LayoutParams gp=new LinearLayout.LayoutParams(-1,-2);gp.topMargin=dp(30);right.addView(greeting,gp);
+        LinearLayout right=new LinearLayout(this);right.setOrientation(LinearLayout.VERTICAL);LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(0,-1,1.12f);rp.leftMargin=dp(40);content.addView(right,rp);
+        greeting=Duo.text(this,"",18,colors.SECOND,600);LinearLayout.LayoutParams gp=new LinearLayout.LayoutParams(-1,-2);gp.topMargin=dp(16);right.addView(greeting,gp);
         ScrollView scroll=new ScrollView(this);scroll.setFocusable(false);scroll.setVerticalScrollBarEnabled(false);
-        reply=Duo.text(this,"What would you like to do?",30,Duo.INK,700);reply.setLineSpacing(dp(6),1);scroll.addView(reply);
+        reply=Duo.text(this,"What shall we do today?",30,colors.INK,700);reply.setLineSpacing(dp(6),1);scroll.addView(reply);
         LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,0,1);sp.topMargin=dp(12);right.addView(scroll,sp);
-        heard=Duo.text(this,"",14,Duo.MUTED,600);heard.setMaxLines(2);LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(-1,-2);hp.bottomMargin=dp(12);right.addView(heard,hp);
+        heard=Duo.text(this,"",14,colors.MUTED,600);heard.setMaxLines(2);LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(-1,-2);hp.bottomMargin=dp(12);right.addView(heard,hp);
         String[][] starters={{"play","Play lo-fi on YouTube","Play lo-fi on YouTube"},{"music","What’s playing?","What’s playing right now?"},{"timer","Set a 10-minute timer","Set a ten minute timer"},{"moon","Show the screensaver",""}};
         for(String[] st:starters){LinearLayout r=Duo.row(this,st[0],st[1],()->{if(st[2].isEmpty())startActivity(new Intent(this,AmbientActivity.class));else send(st[2]);});right.addView(r,new LinearLayout.LayoutParams(-1,dp(48)));}
         LinearLayout actions=new LinearLayout(this);actions.setGravity(Gravity.CENTER_VERTICAL);
@@ -53,13 +58,22 @@ public final class MainActivity extends Activity {
     }
     /** Typing opens a text box, so the action row stays as simple as the remote. */
     private void typeRequest(){
-        input=new EditText(this);input.setSingleLine(true);input.setTextSize(17);input.setTypeface(Fonts.get(this,600));input.setTextColor(Duo.INK);input.setHintTextColor(Duo.MUTED);input.setHint("What should Buddy do?");
-        input.setPadding(dp(18),dp(12),dp(18),dp(12));input.setBackground(Duo.round(this,Duo.CANVAS,14,Duo.LINE,1));input.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEND);
+        input=new EditText(this);input.setSingleLine(true);input.setTextSize(17);input.setTypeface(Fonts.get(this,600));input.setTextColor(colors.INK);input.setHintTextColor(colors.MUTED);input.setHint("Ask "+Duo.name(this)+" anything");
+        input.setPadding(dp(18),dp(12),dp(18),dp(12));input.setBackground(Duo.round(this,colors.CANVAS,14,colors.LINE,1));input.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEND);
         FrameLayout box=new FrameLayout(this);box.setPadding(dp(22),dp(8),dp(22),0);box.addView(input);
         final AlertDialog[] shown=new AlertDialog[1];
         input.setOnEditorActionListener((v,a,e)->{send(input.getText().toString());if(shown[0]!=null)shown[0].dismiss();return true;});
         shown[0]=Fonts.show(Fonts.dialog(this).setTitle("Type a request").setView(box).setPositiveButton("Send",(d,w)->send(input.getText().toString())).setNegativeButton("Cancel",null));
         input.requestFocus();
+    }
+    private void chooseAppearance(){
+        String[] modes={"system","light","night"},labels={"Follow TV","Light","Night"};
+        int selected=java.util.Arrays.asList(modes).indexOf(Duo.appearance(this));
+        Fonts.show(Fonts.dialog(this).setTitle("Appearance").setSingleChoiceItems(labels,Math.max(0,selected),(dialog,which)->{
+            String mode=modes[which];boolean changed=!mode.equals(Duo.appearance(this));
+            Api.prefs(this).edit().putString("appearance",mode).apply();dialog.dismiss();
+            if(changed)recreate();
+        }).setNegativeButton("Done",null));
     }
     private String greetingText(){
         int h=java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY);String person=CompanionService.state.optString("person","");
@@ -69,12 +83,14 @@ public final class MainActivity extends Activity {
         String message=listening?"Listening":s.optString("status",Api.paired(this)?"Connecting to your Mac":"Pair this TV from your Mac");
         int dot=listening?Duo.SKY:phase.equals("thinking")||phase.equals("acting")?Duo.ORANGE:Duo.GREEN;
         android.text.SpannableString pill=new android.text.SpannableString("●  "+message);pill.setSpan(new android.text.style.ForegroundColorSpan(dot),0,1,0);status.setText(pill);
-        String answer=s.optString("reply",""),user=s.optString("user","");
-        if(!answer.isEmpty()){reply.setText(answer);reply.setTextSize(answer.length()>140?22:answer.length()>70?26:30);greeting.setText(user.isEmpty()?greetingText():"You asked: “"+user+"”");}
-        else{greeting.setText(greetingText());if(!s.optBoolean("configured",true)&&Api.paired(this))reply.setText("Add your API key on the Mac setup page, then press Talk.");}
+        boolean working=phase.equals("thinking")||phase.equals("acting");
+        String answer=!listening&&!working&&CompanionService.replyDisplay.visible(s.optString("replyId",""),SystemClock.uptimeMillis(),CompanionService.speaking)?s.optString("reply",""):"",user=s.optString("user","");
+        greeting.setText(!answer.isEmpty()&&!user.isEmpty()?"You asked: “"+user+"”":greetingText());
+        String text=!answer.isEmpty()?answer:listening?"I’m listening…":working?phase.equals("acting")?"On it…":"Let me think…":!s.optBoolean("configured",true)&&Api.paired(this)?"Add your API key on the Mac setup page, then press Talk.":"What shall we do today?";
+        reply.setText(text);reply.setTextSize(text.length()>140?22:text.length()>70?26:30);
         String error=CompanionService.localError.isEmpty()?s.optString("voiceError",s.optString("error","")):CompanionService.localError;
-        heard.setText(listening&&!CompanionService.heard.isEmpty()?"“"+CompanionService.heard+"”":error.isEmpty()?(answer.isEmpty()?localHeard:""):error);
-        heard.setTextColor(error.isEmpty()||listening?Duo.MUTED:0xffdc2626);
+        heard.setText(listening&&!CompanionService.heard.isEmpty()?"“"+CompanionService.heard+"”":error.isEmpty()?(working&&!user.isEmpty()?"You: "+user:""):error);
+        heard.setTextColor(error.isEmpty()||listening?colors.MUTED:colors.ERROR);
         talkLabel.setText(listening?"Listening…":"Talk");
     }
     private void manual(String tool,JSONObject args){stopSpeaking();try{Api.request(this,"/api/action",new JSONObject().put("tool",tool).put("args",args),(r,e)->{if(e!=null)heard.setText(e);});}catch(Exception e){heard.setText(e.getMessage());}}
@@ -91,11 +107,28 @@ public final class MainActivity extends Activity {
     private void openApp(String key){manual("open_app",Api.json("app",key));}
     /** Colour plus DuoBook's four wardrobe slots, each picked from a remote-friendly list. */
     private void chooseStyle(){
-        String[] slots={"variant","hat","eyewear","neck","face"},titles={"Colour","Hat","Eyewear","Neck","Face"};String[] labels=new String[slots.length+1];
-        for(int i=0;i<slots.length;i++)labels[i]=titles[i]+" · "+styleName(slots[i],Api.prefs(this).getString(slots[i],i==0?"tangerine":""));
+        String[] slots={"variant","hat","eyewear","neck","face"},titles={"Colour","Hat","Eyewear","Neck","Face"};java.util.ArrayList<String> labels=new java.util.ArrayList<>();
+        for(int i=0;i<slots.length;i++)labels.add(titles[i]+" · "+styleName(slots[i],Api.prefs(this).getString(slots[i],i==0?"tangerine":"")));
+        labels.add("Screensaver preview");
         JSONObject look=CompanionService.state.optJSONObject("look");
-        labels[slots.length]="Screensaver preview"+(look!=null&&look.has("label")?"  ·  dressed up for "+look.optString("label"):"");
-        Fonts.show(Fonts.dialog(this).setTitle("Buddy’s style").setItems(labels,(d,which)->{if(which==slots.length)startActivity(new Intent(this,AmbientActivity.class));else chooseStyle(slots[which],titles[which]);}).setNegativeButton("Done",null));
+        if(look!=null&&look.has("label"))labels.add("Outfit suggestion · "+look.optString("label"));
+        Fonts.show(Fonts.dialog(this).setTitle(Duo.name(this)+"’s style").setItems(labels.toArray(new String[0]),(d,which)->{
+            if(which<slots.length)chooseStyle(slots[which],titles[which]);
+            else if(which==slots.length)startActivity(new Intent(this,AmbientActivity.class));
+            else suggestOutfit(look);
+        }).setNegativeButton("Done",null));
+    }
+    /** A quiet idea inside Style: nothing changes unless the user chooses Use outfit. */
+    private void suggestOutfit(JSONObject look){
+        String[] slots={"hat","eyewear","neck","face"};java.util.ArrayList<String> pieces=new java.util.ArrayList<>();
+        for(String slot:slots)if(look.has(slot))pieces.add(styleName(slot,look.optString(slot)));
+        Fonts.show(Fonts.dialog(this).setTitle("An outfit for "+look.optString("label"))
+            .setMessage(android.text.TextUtils.join(" · ",pieces)+". If you fancy a change.")
+            .setPositiveButton("Use outfit",(d,w)->{
+                android.content.SharedPreferences.Editor edit=Api.prefs(this).edit();
+                for(String slot:slots)if(look.has(slot))edit.putString(slot,look.optString(slot));
+                edit.apply();face.invalidate();chooseStyle();
+            }).setNegativeButton("Keep my look",(d,w)->chooseStyle()));
     }
     private String styleName(String slot,String id){
         if(slot.equals("variant")){String[] v=VARIANTS;for(int i=0;i<v.length;i++)if(v[i].equals(id))return VARIANT_NAMES[i];return VARIANT_NAMES[0];}
@@ -112,7 +145,7 @@ public final class MainActivity extends Activity {
         Fonts.show(Fonts.dialog(this).setTitle(title).setSingleChoiceItems(names.toArray(new String[0]),selected,(dialog,which)->{Api.prefs(this).edit().putString(slot,ids.get(which)).apply();face.invalidate();dialog.dismiss();chooseStyle();}).setNegativeButton("Back",(d,w)->chooseStyle()));
     }
     private void stopSpeaking(){startForegroundService(new Intent(this,CompanionService.class).setAction("stop_speaking"));}
-    private void send(String text){text=text.trim();if(text.isEmpty())return;final String sent=text;CompanionService.localError="";localHeard="You: "+sent;stopSpeaking();input.setText("");heard.setText(localHeard);status.setText("●  Thinking");face.phase="thinking";Api.request(this,"/api/chat",Api.json("text",sent),(r,e)->{if(e!=null){CompanionService.localError=e;heard.setText(e);face.phase="idle";status.setText("●  Ready");}});}
+    private void send(String text){text=text.trim();if(text.isEmpty())return;final String sent=text;CompanionService.localError="";CompanionService.replyDisplay.clear();stopSpeaking();input.setText("");heard.setText("You: "+sent);status.setText("●  Thinking");face.phase="thinking";Api.request(this,"/api/chat",Api.json("text",sent),(r,e)->{if(e!=null){CompanionService.localError=e;heard.setText(e);face.phase="idle";status.setText("●  Ready");}});}
     private boolean controllerHandlesRemote(){return CompanionService.state.optBoolean("remoteButtonEnabled")&&CompanionService.state.optBoolean("remoteButtonReady");}
     private void listen(){
         if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},10);return;}

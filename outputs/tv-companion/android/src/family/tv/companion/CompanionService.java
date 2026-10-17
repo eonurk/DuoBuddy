@@ -40,14 +40,15 @@ public final class CompanionService extends Service {
     private boolean polling=false,destroyed=false,autoListen=false,followUpListen=false;
     private String lastReply=null,audioError="",captionReply="";
     private long captionUntil=0;
+    static final ReplyDisplay replyDisplay=new ReplyDisplay();
     // A reaction to what's on: Buddy pops in for a few seconds, even over a video.
     private int lastReaction=-1;private long reactionUntil=0;private JSONObject reaction=null;
     public IBinder onBind(Intent i){return null;}
     public void onCreate(){
-        super.onCreate();wm=(WindowManager)getSystemService(WINDOW_SERVICE);
-        String channel="buddy";NotificationManager nm=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);nm.createNotificationChannel(new NotificationChannel(channel,"TV Companion",NotificationManager.IMPORTANCE_LOW));
+        super.onCreate();replyDisplay.clear();wm=(WindowManager)getSystemService(WINDOW_SERVICE);
+        String channel="buddy";NotificationManager nm=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);nm.createNotificationChannel(new NotificationChannel(channel,Duo.name(this),NotificationManager.IMPORTANCE_LOW));
         PendingIntent open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),PendingIntent.FLAG_UPDATE_CURRENT);
-        startForeground(12,new Notification.Builder(this,channel).setContentTitle("Buddy is ready").setContentText("Press the remote’s microphone button to talk. The microphone listens only when requested.").setSmallIcon(android.R.drawable.ic_btn_speak_now).setContentIntent(open).build());
+        startForeground(12,new Notification.Builder(this,channel).setContentTitle(Duo.name(this)+" is ready").setContentText("Press the remote’s microphone button to talk. The microphone listens only when requested.").setSmallIcon(android.R.drawable.ic_btn_speak_now).setContentIntent(open).build());
         audioManager=(AudioManager)getSystemService(AUDIO_SERVICE);
         handler.post(poll);
     }
@@ -83,7 +84,7 @@ public final class CompanionService extends Service {
         boolean allowed=checkSelfPermission(Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED&&SpeechRecognizer.isRecognitionAvailable(this);
         if(!allowed||(!visible&&!Settings.canDrawOverlays(this))){if(!followUp)startActivity(new Intent(this,MainActivity.class).setAction(Intent.ACTION_ASSIST).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));return;}
         listenSession.begin(SystemClock.uptimeMillis(),followUp);
-        autoListen=false;followUpListen=followUp;stopAudio();localError="";heard="";
+        replyDisplay.clear();autoListen=false;followUpListen=followUp;stopAudio();localError="";heard="";
         handler.postDelayed(listenTimeout,ListeningSession.MAX_DURATION_MS);
         beginRecognition();
     }
@@ -122,7 +123,7 @@ public final class CompanionService extends Service {
             android.util.Log.i("BuddyVoice","Speech input ended early; retrying");
             handler.postDelayed(retryListening,400);changed();return;
         }
-        endListening(followUpListen&&empty?"":empty?"I didn’t catch that. Try again.":"Microphone unavailable ("+error+"). You can type a request in Buddy.");
+        endListening(followUpListen&&empty?"":empty?"I didn’t catch that. Try again.":"Microphone unavailable ("+error+"). You can type a request in DuoBuddy.");
     }
     private void beginRecognition(){
         final int attempt=listenSession.attempt(SystemClock.uptimeMillis());
@@ -169,13 +170,14 @@ public final class CompanionService extends Service {
         Api.request(CompanionService.this,"/api/state",null,(data,error)->{
             polling=false;if(destroyed)return;
             if(data!=null){
-                state=data;String id=data.optString("replyId","");
+                state=data;if(listening||"thinking".equals(data.optString("phase"))||"acting".equals(data.optString("phase")))replyDisplay.clear();String id=data.optString("replyId","");
                 if(lastReply==null)lastReply=id;
                 else if(!id.equals(lastReply)){
                     lastReply=id;boolean finalReply="idle".equals(data.optString("phase",""))&&!data.optString("reply","").isEmpty();
                     autoListen=finalReply&&data.optBoolean("followUp",false)&&!data.optString("audioPath","").isEmpty();
                     // The caption stays while Buddy speaks and leaves shortly after (see finishCaption);
                     // with no audio to wait for, it shows for a few seconds of reading time.
+                    if(finalReply)replyDisplay.received(id,SystemClock.uptimeMillis());else replyDisplay.clear();
                     if(finalReply){captionReply=data.optString("reply","");captionUntil=SystemClock.uptimeMillis()+(data.optString("audioPath","").isEmpty()?Math.min(9000,3000+captionReply.length()*50L):30000);}
                     playAudio(data.optString("audioPath",""));
                 }
@@ -209,10 +211,11 @@ public final class CompanionService extends Service {
         f.setMood(on?reaction.optString("mood",""):"");f.dressUp=on?reaction.optJSONObject("outfit"):null;
         JSONObject sc=on?reaction.optJSONObject("scarf"):null;if(sc!=null){f.scarfMain=hex(sc.optString("primary"),0xffe11d48);f.scarfStripe=hex(sc.optString("secondary"),0xffffffff);}
     }
-    /** DuoBook's white speech card. */
-    private GradientDrawable panel(){return Duo.round(this,Duo.WHITE,18,Duo.LINE,1);}
+    /** Buddy's speech card in the selected appearance. */
+    private GradientDrawable panel(){Duo.Palette colors=Duo.palette(this);return Duo.round(this,colors.SURFACE,18,colors.LINE,1);}
     /** Ends the reply caption soon after speech finishes; sooner still when a video or music is playing. */
     private void finishCaption(long graceMs){
+        replyDisplay.finished(SystemClock.uptimeMillis());
         long grace=graceMs>=0?graceMs:audioManager!=null&&audioManager.isMusicActive()?400:1500;
         captionUntil=SystemClock.uptimeMillis()+grace;handler.postDelayed(()->refreshBubble(),grace+60);refreshBubble();
     }
@@ -226,7 +229,7 @@ public final class CompanionService extends Service {
         boolean show=!visible&&wantBubble()&&Settings.canDrawOverlays(this);
         if(show&&bubbleRoot==null){
             bubbleRoot=new LinearLayout(this);bubbleRoot.setOrientation(LinearLayout.VERTICAL);bubbleRoot.setGravity(Gravity.RIGHT);
-            caption=new TextView(this);caption.setTextColor(Duo.INK);caption.setElevation(dp(4));caption.setTextSize(15);caption.setTypeface(Fonts.get(this,600));caption.setMaxLines(6);caption.setEllipsize(TextUtils.TruncateAt.END);caption.setMaxWidth(dp(420));caption.setPadding(dp(14),dp(10),dp(14),dp(10));caption.setBackground(panel());caption.setVisibility(View.GONE);
+            caption=new TextView(this);caption.setTextColor(Duo.palette(this).INK);caption.setElevation(dp(4));caption.setTextSize(15);caption.setTypeface(Fonts.get(this,600));caption.setMaxLines(6);caption.setEllipsize(TextUtils.TruncateAt.END);caption.setMaxWidth(dp(420));caption.setPadding(dp(14),dp(10),dp(14),dp(10));caption.setBackground(panel());caption.setVisibility(View.GONE);
             LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-2,-2);cp.rightMargin=dp(8);cp.bottomMargin=dp(2);bubbleRoot.addView(caption,cp);
             bubble=new FaceView(this,true);bubbleRoot.addView(bubble,new LinearLayout.LayoutParams(dp(150),dp(150)));
             WindowManager.LayoutParams p=new WindowManager.LayoutParams(-2,-2,WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,PixelFormat.TRANSLUCENT);p.gravity=Gravity.BOTTOM|Gravity.RIGHT;p.x=dp(12);p.y=dp(12);
@@ -234,7 +237,7 @@ public final class CompanionService extends Service {
             try{wm.addView(bubbleRoot,p);}catch(Exception e){bubbleRoot=null;bubble=null;caption=null;}
         }else if(!show&&bubbleRoot!=null){try{wm.removeView(bubbleRoot);}catch(Exception ignored){}bubbleRoot=null;bubble=null;caption=null;}
         if(bubble!=null){bubble.phase=effectivePhase();bubble.talking=speaking;dress(bubble);}
-        if(caption!=null){String text=captionText();if(text.isEmpty())caption.setVisibility(View.GONE);else{if(!text.contentEquals(caption.getText()))caption.setText(text);caption.setVisibility(View.VISIBLE);}}
+        if(caption!=null){caption.setTextColor(Duo.palette(this).INK);caption.setBackground(panel());String text=captionText();if(text.isEmpty())caption.setVisibility(View.GONE);else{if(!text.contentEquals(caption.getText()))caption.setText(text);caption.setVisibility(View.VISIBLE);}}
     }
     private int dp(float n){return(int)(n*getResources().getDisplayMetrics().density+.5f);}
     public void onDestroy(){destroyed=true;handler.removeCallbacksAndMessages(null);stopAudio();clearListening();if(bubbleRoot!=null)try{wm.removeView(bubbleRoot);}catch(Exception ignored){}speaking=false;super.onDestroy();}

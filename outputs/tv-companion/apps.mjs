@@ -27,7 +27,7 @@ export const KNOWN_APPS = Object.freeze({
   nordvpn: {pkg: 'com.nordvpn.android', label: 'NordVPN', aliases: ['vpn', 'nord']},
   live_tv: {pkg: 'com.google.android.tv', label: 'Live TV', aliases: ['tv', 'live']},
   mi_home: {pkg: 'com.mitv.tvhome.atv', label: 'Mi Home', aliases: ['patchwall', 'launcher']},
-  companion: {pkg: 'family.tv.companion', label: 'Buddy', aliases: ['duobook', 'buddy']}
+  companion: {pkg: 'family.tv.companion', label: 'DuoBuddy', aliases: ['duobuddy', 'duobook', 'buddy']}
 });
 
 // Apps that exist to install or sideload other software: Buddy may not drive them

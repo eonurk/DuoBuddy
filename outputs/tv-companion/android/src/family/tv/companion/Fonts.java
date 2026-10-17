@@ -28,15 +28,15 @@ final class Fonts {
         AlertDialog d=b.show();apply(d.getWindow().getDecorView(),600);
         ListView list=d.getListView();
         // DuoBook rows: rounded, with an orange outline on the focused one.
-        int row=d.getContext().getResources().getIdentifier("duo_row","drawable",d.getContext().getPackageName());
+        int row=d.getContext().getResources().getIdentifier(Duo.night(d.getContext())?"duo_row_night":"duo_row","drawable",d.getContext().getPackageName());
         if(list!=null){list.setDivider(null);if(row!=0)list.setSelector(row);list.setDrawSelectorOnTop(false);
             list.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener(){public void onChildViewAdded(View p,View child){apply(child,600);}public void onChildViewRemoved(View p,View child){}});}
-        for(int which:new int[]{AlertDialog.BUTTON_POSITIVE,AlertDialog.BUTTON_NEGATIVE}){android.widget.Button btn=d.getButton(which);if(btn!=null){btn.setTextColor(0xffea580c);btn.setTypeface(get(d.getContext(),700));}}
+        for(int which:new int[]{AlertDialog.BUTTON_POSITIVE,AlertDialog.BUTTON_NEGATIVE}){android.widget.Button btn=d.getButton(which);if(btn!=null){btn.setTextColor(Duo.night(d.getContext())?0xfffb923c:0xffea580c);btn.setTypeface(get(d.getContext(),700));}}
         return d;
     }
-    /** An AlertDialog builder in DuoBook's light, rounded style. */
+    /** An AlertDialog builder in DuoBook's selected, rounded style. */
     static AlertDialog.Builder dialog(Context c){
-        int theme=c.getResources().getIdentifier("DuoDialog","style",c.getPackageName());
+        int theme=c.getResources().getIdentifier(Duo.night(c)?"DuoNightDialog":"DuoDialog","style",c.getPackageName());
         return theme==0?new AlertDialog.Builder(c):new AlertDialog.Builder(c,theme);
     }
 }

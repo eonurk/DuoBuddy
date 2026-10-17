@@ -25,7 +25,7 @@ test('setup connects, pairs, installs, saves and restores a TV without contactin
   const source = new URL('../', import.meta.url);
   for (const name of await readdir(source)) if (name.endsWith('.mjs') || name === 'setup.html') await copyFile(new URL(name, source), join(root, name));
   await copyFile(new URL('android/AndroidManifest.xml', source), join(root, 'android/AndroidManifest.xml'));
-  await writeFile(join(root, 'DuoBook-TV.apk'), 'fixture APK');
+  await writeFile(join(root, 'DuoBuddy-TV.apk'), 'fixture APK');
   // Replace external voice adapters only in this disposable copy of the app.
   await writeFile(join(root, 'piper-client.mjs'), 'export class PiperClient {async ensure(){throw Error("offline fixture");} close(){}}');
   await writeFile(join(root, 'mac-voice.mjs'), 'export async function macSpeak(){return {audio:Buffer.from("RIFF0000WAVE"),voice:"fixture",duration:1};}');
@@ -67,7 +67,7 @@ else console.log('');
   assert.equal(page.status, 200); assert.match(page.data, /id="tv-config"/);
   const connected = await call('/admin/tv', {address: '192.168.1.30:40234', remoteName: 'NVIDIA Remote', pairAddress: '192.168.1.30:37123', pairCode: '123456'});
   assert.equal(connected.status, 200, JSON.stringify(connected.data));
-  assert.equal(connected.data.bundled, 3); assert.equal(connected.data.installed, 3);
+  assert.equal(connected.data.bundled, 6); assert.equal(connected.data.installed, 3);
   assert.match(connected.data.tv, /Google TV Streamer/);
   assert.equal((await call('/admin/tv/install', {})).status, 200);
   assert.equal((await call('/admin/tv/screensaver', {})).status, 200);

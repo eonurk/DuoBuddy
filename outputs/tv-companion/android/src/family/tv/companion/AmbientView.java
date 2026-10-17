@@ -29,7 +29,7 @@ import java.util.Random;
 public final class AmbientView extends FrameLayout {
     private static final int CREAM=Color.rgb(255,244,230),INK=Duo.INK;
     private final Handler handler=new Handler(Looper.getMainLooper());
-    private final Sky sky;private final LinearLayout corner;private final TextView clock,date,weatherLine,bubble;private final FrameLayout bubbleBox;
+    private final Sky sky;private final LinearLayout corner;private final TextView clock,date,weatherLine,bubble;private final FrameLayout bubbleBox;private final View bubbleTail;
     private final FaceView face;private Duo.Icon weatherIcon;private final Random random=new Random();
     private JSONObject data=new JSONObject();private long fetchedAt=0;private boolean running=false,stretched=false;
     private int line=0;private String lastBubble="";
@@ -49,8 +49,8 @@ public final class AmbientView extends FrameLayout {
         bubble=new TextView(c);bubble.setTextSize(19);bubble.setTypeface(Fonts.get(c,600));bubble.setLineSpacing(dp(4),1);bubble.setTextColor(INK);bubble.setLineSpacing(dp(3),1);bubble.setMaxWidth(dp(380));bubble.setPadding(dp(24),dp(16),dp(24),dp(18));
         GradientDrawable b=new GradientDrawable();b.setColor(0xf7ffffff);b.setCornerRadius(dp(22));bubble.setBackground(b);bubble.setElevation(dp(6));
         bubbleBox.addView(bubble,new FrameLayout.LayoutParams(-2,-2));
-        View tail=new View(c){protected void onDraw(Canvas cv){Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);p.setColor(0xf7ffffff);Path t=new Path();t.moveTo(0,0);t.lineTo(getWidth(),0);t.lineTo(getWidth()*.85f,getHeight());t.close();cv.drawPath(t,p);}};
-        FrameLayout.LayoutParams tp=new FrameLayout.LayoutParams(dp(20),dp(14),Gravity.BOTTOM|Gravity.RIGHT);tp.rightMargin=dp(46);bubbleBox.addView(tail,tp);
+        View tail=new View(c){protected void onDraw(Canvas cv){Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);p.setColor(Duo.palette(getContext()).SURFACE);Path t=new Path();t.moveTo(0,0);t.lineTo(getWidth(),0);t.lineTo(getWidth()*.85f,getHeight());t.close();cv.drawPath(t,p);}};
+        bubbleTail=tail;FrameLayout.LayoutParams tp=new FrameLayout.LayoutParams(dp(20),dp(14),Gravity.BOTTOM|Gravity.RIGHT);tp.rightMargin=dp(46);bubbleBox.addView(tail,tp);
         ((FrameLayout.LayoutParams)bubble.getLayoutParams()).bottomMargin=dp(13);
         LayoutParams bp=new LayoutParams(-2,-2,Gravity.BOTTOM|Gravity.RIGHT);bp.rightMargin=dp(250);bp.bottomMargin=dp(250);addView(bubbleBox,bp);
 
@@ -73,7 +73,7 @@ public final class AmbientView extends FrameLayout {
     private final Runnable tick=new Runnable(){public void run(){if(!running)return;render();handler.postDelayed(this,1000-System.currentTimeMillis()%1000);}};
     private final Runnable fetch=new Runnable(){public void run(){
         if(!running)return;
-        Api.request(getContext(),"/api/ambient",null,(d,e)->{if(d!=null){data=d;fetchedAt=SystemClock.uptimeMillis();face.look=d.optJSONObject("look");}render();});
+        Api.request(getContext(),"/api/ambient",null,(d,e)->{if(d!=null){data=d;fetchedAt=SystemClock.uptimeMillis();}render();});
         handler.postDelayed(this,60*1000);
     }};
     /** Buddy says the next thing every few seconds, with a gentle fade. */
@@ -99,7 +99,7 @@ public final class AmbientView extends FrameLayout {
     private ArrayList<String> lines(){
         int h=hour();ArrayList<String> out=new ArrayList<>();
         String person=data.optString("person","");JSONArray bday=data.optJSONArray("birthday");
-        if(bday!=null&&bday.length()>0)out.add("Happy birthday, "+bday.optString(0)+". I’m wearing my party hat for you.");
+        if(bday!=null&&bday.length()>0)out.add("Happy birthday, "+bday.optString(0)+".");
         String hello=h<5?"Still up? Hello":h<12?"Good morning":h<18?"Good afternoon":h<22?"Good evening":"Hello, night owl";
         out.add(hello.equals("Still up? Hello")?"Still up"+(person.isEmpty()?"":", "+person)+"? Take it easy.":hello+(person.isEmpty()?"":", "+person)+".");
         String[] kind=night(h)?NIGHT:h>=17?EVENING:DAY;
@@ -107,8 +107,6 @@ public final class AmbientView extends FrameLayout {
         out.add(kind[(int)((System.currentTimeMillis()/600000)%kind.length)]);
         JSONObject wd=data.optJSONObject("word");
         if(wd!=null)out.add(wd.optString("language")+" word of the day: “"+wd.optString("word")+"”, which means "+wd.optString("meaning")+".");
-        JSONObject look=data.optJSONObject("look");
-        if(look!=null&&look.has("label")&&(bday==null||bday.length()==0)){String l=look.optString("label");out.add(l.contains("Halloween")?"I dressed up for Halloween. Do you like it?":l.contains("Christmas")?"I’m ready for Christmas.":"I dressed up for "+l+".");}
         JSONArray timers=data.optJSONArray("timers");long gone=(SystemClock.uptimeMillis()-fetchedAt)/1000;
         if(timers!=null)for(int i=0;i<timers.length();i++){JSONObject t=timers.optJSONObject(i);long left=Math.max(0,t.optLong("secondsLeft")-gone);
             out.add("I’m keeping an eye on "+(t.optString("label").isEmpty()?"your timer":"the "+t.optString("label")+" timer")+": "+Math.max(1,(left+59)/60)+" min to go.");}
@@ -118,6 +116,8 @@ public final class AmbientView extends FrameLayout {
         return out;
     }
     private void render(){
+        Duo.Palette colors=Duo.palette(getContext());bubble.setTextColor(colors.INK);
+        ((GradientDrawable)bubble.getBackground()).setColor(colors.SURFACE);bubbleTail.invalidate();
         Calendar now=Calendar.getInstance();int h=now.get(Calendar.HOUR_OF_DAY);
         clock.setText(new SimpleDateFormat("HH:mm",Locale.getDefault()).format(now.getTime()));
         date.setText(new SimpleDateFormat("EEEE d MMMM",Locale.getDefault()).format(now.getTime()));

@@ -103,7 +103,7 @@ test('screensaver setup reports rejected settings and requires an installed comp
   tv.setDevice('denied.local:5555');
   await assert.rejects(tv.useBuddyScreensaver(), /Permission denial/);
   tv.companionVersion = async () => 0;
-  await assert.rejects(tv.useBuddyScreensaver(), /Install Buddy/);
+  await assert.rejects(tv.useBuddyScreensaver(), /Install DuoBuddy/);
 });
 
 test('changing TVs discards the previous catalogue, identity, volume and screen dimensions', () => {

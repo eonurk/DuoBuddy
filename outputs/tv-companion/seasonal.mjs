@@ -1,5 +1,5 @@
-// Buddy dresses up on its own for the time of year and for family birthdays. The TV
-// layers these over the outfit picked in Style, slot by slot, while the setting is on.
+// Outfit ideas for the time of year and family birthdays. The TV offers these in Style;
+// they only change the saved outfit when the user chooses to use one.
 const SEASONS = [
   // [from MM-DD, to MM-DD, label, outfit] — the first match wins.
   ['10-31', '10-31', 'Halloween', {hat: 'witchhat', neck: 'spookyscarf'}],
@@ -13,7 +13,7 @@ const SEASONS = [
 
 const monthDay = d => String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 
-/** Today's automatic outfit, or null. birthdays: [{name, birthday: 'MM-DD'}]. */
+/** Today's suggested outfit, or null. birthdays: [{name, birthday: 'MM-DD'}]. */
 export function seasonalLook(now = new Date(), birthdays = []) {
   const today = monthDay(now);
   const party = birthdays.filter(b => b.birthday === today).map(b => b.name);

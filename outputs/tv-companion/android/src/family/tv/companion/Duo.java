@@ -1,6 +1,7 @@
 package family.tv.companion;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.*;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
@@ -12,11 +13,29 @@ import android.widget.TextView;
  * Buddy's TV design system, in DuoBook's brand: Quicksand, slate text, one orange accent.
  * Buddy is the only character on screen; everything around him stays quiet. Orange is
  * reserved for the Talk action and for remote-control focus, which also lifts a control
- * onto a white surface. Icons are drawn as 1.8-unit line icons, never emoji.
+ * onto a raised surface. Icons are drawn as 1.8-unit line icons, never emoji.
  */
 final class Duo {
+    static String name(Context c){return c.getApplicationInfo().loadLabel(c.getPackageManager()).toString();}
     static final int CANVAS=0xfff6f7f9,WHITE=0xffffffff,INK=0xff1e293b,BODY=0xff334155,SECOND=0xff64748b,MUTED=0xff94a3b8,LINE=0xffe2e8f0,
         ORANGE=0xfff97316,ORANGE_DARK=0xffea580c,ORANGE_TINT=0xfffff1e6,GREEN=0xff22a06b,SKY=0xff0ea5e9;
+
+    /** Semantic colours shared by the activity, dialogs, screensaver and overlay. */
+    static final class Palette {
+        final int CANVAS,SURFACE,INK,BODY,SECOND,MUTED,LINE,ERROR,STAGE,STAGE_EDGE;
+        Palette(int canvas,int surface,int ink,int body,int second,int muted,int line,int error,int stage,int edge){
+            CANVAS=canvas;SURFACE=surface;INK=ink;BODY=body;SECOND=second;MUTED=muted;LINE=line;ERROR=error;STAGE=stage;STAGE_EDGE=edge;
+        }
+    }
+    private static final Palette DAY=new Palette(CANVAS,WHITE,INK,BODY,SECOND,MUTED,LINE,0xffdc2626,ORANGE_TINT,0xfffff6ef);
+    private static final Palette NIGHT=new Palette(0xff11151c,0xff202731,0xffe5e9f0,0xffccd3dd,0xffa8b3c2,0xff99a5b5,0xff394454,0xfffca5a5,0xff34271f,0xff231e1b);
+    static String appearance(Context c){return Api.prefs(c).getString("appearance","system");}
+    static boolean night(Context c){
+        String mode=appearance(c);
+        return mode.equals("night")||(!mode.equals("light")&&(c.getResources().getConfiguration().uiMode&Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES);
+    }
+    static Palette palette(Context c){return night(c)?NIGHT:DAY;}
+    static int theme(Context c){return c.getResources().getIdentifier(night(c)?"DuoNightTheme":"DuoTheme","style",c.getPackageName());}
 
     static int dp(Context c,float v){return(int)(v*c.getResources().getDisplayMetrics().density+.5f);}
     static GradientDrawable round(Context c,int fill,float radius,int stroke,float strokeWidth){
@@ -53,12 +72,12 @@ final class Duo {
         private void cloud(Canvas c){path.moveTo(7,16.5f);path.cubicTo(3.5f,16.5f,3.2f,11.6f,6.8f,11.2f);path.cubicTo(7.3f,6.5f,14.5f,5.6f,16,10.2f);path.cubicTo(20.2f,10,21,16.5f,17,16.5f);path.close();c.drawPath(path,p);}
     }
 
-    /** A suggestion row: icon and label; focus lifts it onto white with an orange icon. */
+    /** A suggestion row: icon and label; focus lifts it onto a raised surface with an orange icon. */
     static LinearLayout row(Context c,String icon,String label,Runnable click){
-        LinearLayout r=new LinearLayout(c);r.setGravity(Gravity.CENTER_VERTICAL);r.setPadding(dp(c,16),0,dp(c,16),0);r.setFocusable(true);r.setClickable(true);r.setOnClickListener(v->click.run());
-        Icon i=new Icon(c,icon,SECOND);r.addView(i,new LinearLayout.LayoutParams(dp(c,22),dp(c,22)));
-        TextView t=text(c,label,17,BODY,600);LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,-2,1);tp.leftMargin=dp(c,16);r.addView(t,tp);
-        r.setOnFocusChangeListener((v,on)->{r.setBackground(on?round(c,WHITE,14,0,0):null);r.setElevation(on?dp(c,6):0);i.color(on?ORANGE:SECOND);t.setTextColor(on?INK:BODY);});
+        Palette colors=palette(c);LinearLayout r=new LinearLayout(c);r.setGravity(Gravity.CENTER_VERTICAL);r.setPadding(dp(c,16),0,dp(c,16),0);r.setFocusable(true);r.setClickable(true);r.setOnClickListener(v->click.run());
+        Icon i=new Icon(c,icon,colors.SECOND);r.addView(i,new LinearLayout.LayoutParams(dp(c,22),dp(c,22)));
+        TextView t=text(c,label,17,colors.BODY,600);LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,-2,1);tp.leftMargin=dp(c,16);r.addView(t,tp);
+        r.setOnFocusChangeListener((v,on)->{r.setBackground(on?round(c,colors.SURFACE,14,ORANGE,2):null);r.setElevation(on?dp(c,6):0);i.color(on?ORANGE:colors.SECOND);t.setTextColor(on?colors.INK:colors.BODY);});
         return r;
     }
     /** The one primary action: an orange pill with an icon. */
@@ -67,16 +86,16 @@ final class Duo {
         b.setOnFocusChangeListener((v,on)->{b.setBackground(round(c,on?ORANGE_DARK:ORANGE,999,0,0));b.setElevation(on?dp(c,6):0);b.animate().scaleX(on?1.04f:1).scaleY(on?1.04f:1).setDuration(140).start();});
         return b;
     }
-    /** A quiet action: icon and label on the canvas, lifted onto white when focused. */
+    /** A quiet action: icon and label on the canvas, lifted onto a raised surface when focused. */
     static LinearLayout quiet(Context c,String icon,String label,Runnable click){
-        LinearLayout b=action(c,icon,label,click);Icon i=(Icon)b.getChildAt(0);TextView t=(TextView)b.getChildAt(1);
-        b.setOnFocusChangeListener((v,on)->{b.setBackground(on?round(c,WHITE,999,0,0):null);b.setElevation(on?dp(c,6):0);i.color(on?ORANGE:SECOND);t.setTextColor(on?INK:BODY);});
+        Palette colors=palette(c);LinearLayout b=action(c,icon,label,click);Icon i=(Icon)b.getChildAt(0);TextView t=(TextView)b.getChildAt(1);
+        b.setOnFocusChangeListener((v,on)->{b.setBackground(on?round(c,colors.SURFACE,999,ORANGE,2):null);b.setElevation(on?dp(c,6):0);i.color(on?ORANGE:colors.SECOND);t.setTextColor(on?colors.INK:colors.BODY);});
         return b;
     }
     private static LinearLayout action(Context c,String icon,String label,Runnable click){
-        LinearLayout b=new LinearLayout(c);b.setGravity(Gravity.CENTER);b.setPadding(dp(c,18),0,dp(c,20),0);b.setFocusable(true);b.setClickable(true);b.setOnClickListener(v->click.run());
-        b.addView(new Icon(c,icon,SECOND),new LinearLayout.LayoutParams(dp(c,20),dp(c,20)));
-        TextView t=text(c,label,15,BODY,700);LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(-2,-2);tp.leftMargin=dp(c,9);b.addView(t,tp);
+        Palette colors=palette(c);LinearLayout b=new LinearLayout(c);b.setGravity(Gravity.CENTER);b.setPadding(dp(c,18),0,dp(c,20),0);b.setFocusable(true);b.setClickable(true);b.setOnClickListener(v->click.run());
+        b.addView(new Icon(c,icon,colors.SECOND),new LinearLayout.LayoutParams(dp(c,20),dp(c,20)));
+        TextView t=text(c,label,15,colors.BODY,700);LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(-2,-2);tp.leftMargin=dp(c,9);b.addView(t,tp);
         return b;
     }
 
@@ -85,8 +104,8 @@ final class Duo {
         private final Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);
         Stage(Context c){super(c);}
         protected void onDraw(Canvas c){
-            float w=getWidth(),h=getHeight(),r=Math.min(w,h)*.42f,cx=w/2,cy=h*.5f;
-            p.setColor(0xff000000);p.setShader(new RadialGradient(cx,cy,r,new int[]{ORANGE_TINT,0xfffff6ef,0x00fff6ef},new float[]{0,.7f,1},Shader.TileMode.CLAMP));c.drawCircle(cx,cy,r,p);p.setShader(null);
+            Palette colors=palette(getContext());float w=getWidth(),h=getHeight(),r=Math.min(w,h)*.42f,cx=w/2,cy=h*.5f;
+            p.setColor(0xff000000);p.setShader(new RadialGradient(cx,cy,r,new int[]{colors.STAGE,colors.STAGE_EDGE,colors.STAGE_EDGE&0x00ffffff},new float[]{0,.7f,1},Shader.TileMode.CLAMP));c.drawCircle(cx,cy,r,p);p.setShader(null);
             float fy=cy+r*.72f;p.setShader(new RadialGradient(cx,fy,r*.55f,new int[]{0x1f1e293b,0x001e293b},null,Shader.TileMode.CLAMP));c.save();c.scale(1,.16f,cx,fy);c.drawCircle(cx,fy,r*.55f,p);c.restore();p.setShader(null);
         }
     }

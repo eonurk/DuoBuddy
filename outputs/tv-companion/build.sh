@@ -20,6 +20,6 @@ cp "$build_root/resources.apk" "$build_root/unsigned.apk"
 if [ ! -f "$build_root/companion.keystore" ]; then
   "$jdk_root/bin/keytool" -genkeypair -keystore "$build_root/companion.keystore" -alias companion -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname 'CN=Local TV Companion'
 fi
-"$jdk_root/bin/java" -jar "$android_build/lib/apksigner.jar" sign --ks "$build_root/companion.keystore" --ks-pass pass:android --out "$source_root/DuoBook-TV.apk" "$build_root/aligned.apk"
-"$jdk_root/bin/java" -jar "$android_build/lib/apksigner.jar" verify "$source_root/DuoBook-TV.apk"
-echo 'Built outputs/tv-companion/DuoBook-TV.apk'
+"$jdk_root/bin/java" -jar "$android_build/lib/apksigner.jar" sign --ks "$build_root/companion.keystore" --ks-pass pass:android --out "$source_root/DuoBuddy-TV.apk" "$build_root/aligned.apk"
+"$jdk_root/bin/java" -jar "$android_build/lib/apksigner.jar" verify "$source_root/DuoBuddy-TV.apk"
+echo 'Built outputs/tv-companion/DuoBuddy-TV.apk'

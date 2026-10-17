@@ -16,7 +16,8 @@ import java.util.HashMap;
  * The wardrobe (hat, eyewear, neck, face) layers in the component's order.
  * Moods add TV-only poses: sleepy and stretch for the screensaver, and quick reactions to
  * what's on (scared under a blanket, cheer, groove, laugh, aww, sad).
- * Outfit slots resolve as: reaction outfit, then today's seasonal look, then the Style menu.
+ * Outfit slots resolve as: a temporary reaction outfit, then the saved Style choice.
+ * Seasonal outfits are suggestions in Style and only become saved choices when accepted.
  */
 public final class FaceView extends View {
     private static final int INK=0xff7c2d12,PUPIL=0xff1e293b,WHITE=0xffffffff,TONGUE=0xfffb7185,NOTE=0xff0ea5e9;
@@ -32,11 +33,9 @@ public final class FaceView extends View {
     private String mood="";private long moodStart=0;
     /** Temporary outfit for a reaction, and the team scarf's colours. */
     public JSONObject dressUp=null;public int scarfMain=0xffe11d48,scarfStripe=WHITE;
-    /** Seasonal look when the controller's state isn't available (the screensaver sets it). */
-    public JSONObject look=null;
 
     public FaceView(Context c,boolean mini){
-        super(c);small=mini;setContentDescription("Your Duobook book companion");
+        super(c);small=mini;setContentDescription(Duo.name(c)+", your TV companion");
         line.setStyle(Paint.Style.STROKE);line.setStrokeCap(Paint.Cap.ROUND);line.setStrokeJoin(Paint.Join.ROUND);
         cover.addRoundRect(new RectF(22,16,98,108),20,20,Path.Direction.CW);
     }
@@ -45,8 +44,6 @@ public final class FaceView extends View {
     public String mood(){return mood;}
     private String slot(android.content.SharedPreferences prefs,String name){
         if(dressUp!=null&&dressUp.has(name))return dressUp.optString(name);
-        JSONObject season=CompanionService.state.has("look")?CompanionService.state.optJSONObject("look"):look;
-        if(season!=null&&season.has(name))return season.optString(name);
         return prefs.getString(name,"");
     }
     private JSONObject palette(String variant){
@@ -232,7 +229,7 @@ public final class FaceView extends View {
             fill.setAlpha(255);line.setAlpha(255);c.restore();}
         c.restore();
 
-        if(!small){float sp=getResources().getDisplayMetrics().scaledDensity;label(c,"Your DuoBook buddy",w/2,h*.88f,sp*22,Color.rgb(244,248,251));label(c,"A FAMILIAR FACE. A NEW ADVENTURE.",w/2,h*.96f,sp*8,Color.rgb(138,157,172));}
+        if(!small){float sp=getResources().getDisplayMetrics().scaledDensity;label(c,Duo.name(getContext()),w/2,h*.88f,sp*22,Color.rgb(244,248,251));label(c,"A FAMILIAR FACE. A NEW ADVENTURE.",w/2,h*.96f,sp*8,Color.rgb(138,157,172));}
         if(small)postInvalidateDelayed(33);else postInvalidateOnAnimation();
     }
 }

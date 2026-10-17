@@ -13,7 +13,7 @@ public final class Api {
     static final ExecutorService IO=Executors.newFixedThreadPool(3);
     public interface Callback {void done(JSONObject value, String error);}
     /** Reported to the controller so it knows whether this build can listen in place. */
-    static final int VERSION=3;
+    static final int VERSION=6;
     static SharedPreferences prefs(Context c){return c.getSharedPreferences("pairing",Context.MODE_PRIVATE);}
     static boolean paired(Context c){return !prefs(c).getString("server","").isEmpty()&&!prefs(c).getString("token","").isEmpty();}
     static void request(Context c,String path,JSONObject data,Callback callback){
