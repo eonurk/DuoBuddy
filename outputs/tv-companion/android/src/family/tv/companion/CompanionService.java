@@ -35,9 +35,9 @@ public final class CompanionService extends Service {
     public static volatile String heard="",localError="";
     private final Handler handler=new Handler(Looper.getMainLooper());
     private WindowManager wm;private LinearLayout bubbleRoot;private TextView caption;private FaceView bubble;
-    private MediaPlayer player;private AudioManager audioManager;private SpeechRecognizer recognizer;private LocalPiper piper;
+    private MediaPlayer player;private AudioManager audioManager;private SpeechRecognizer recognizer;private LocalPiper piper;private SystemVoice systemVoice;
     private final ListeningSession listenSession=new ListeningSession();
-    private boolean polling=false,destroyed=false,autoListen=false,followUpListen=false;
+    private boolean polling=false,destroyed=false,autoListen=false,followUpListen=false,quickReply=false;
     private Api.StateWatch stateWatch;
     private long stateRevision=-1;private String stateSession="";
     private int followUpRequest=0;
@@ -54,7 +54,7 @@ public final class CompanionService extends Service {
         PendingIntent open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),PendingIntent.FLAG_UPDATE_CURRENT);
         startForeground(12,new Notification.Builder(this,channel).setContentTitle(Duo.name(this)+" is ready").setContentText("Press the remote’s microphone button to talk. The microphone listens only when requested.").setSmallIcon(android.R.drawable.ic_btn_speak_now).setContentIntent(open).build());
         audioManager=(AudioManager)getSystemService(AUDIO_SERVICE);
-        piper=new LocalPiper(this);piper.warm();
+        piper=new LocalPiper(this);systemVoice=new SystemVoice(this);if(!VoiceStore.system(this))piper.warm();
         stateWatch=new Api.StateWatch(this);
         handler.post(poll);
     }
@@ -66,7 +66,7 @@ public final class CompanionService extends Service {
             clearListening();autoListen=false;captionReply="Hi! I'm your DuoBuddy. Shall we find something good to watch?";
             captionUntil=SystemClock.uptimeMillis()+120000;speakLocal(captionReply,true);
         }
-        if("voice_changed".equals(action)){autoListen=false;stopAudio();piper.warm();}
+        if("voice_changed".equals(action)){autoListen=false;stopAudio();if(!VoiceStore.system(this))piper.warm();}
         if("local_timer".equals(action))LocalController.get(this).fireTimer(intent.getIntExtra("id",-1));
         if(LISTEN.equals(action))startListening(false);
         if(FINISH_LISTEN.equals(action))finishListening();
@@ -74,7 +74,7 @@ public final class CompanionService extends Service {
     }
 
     // ---- speech output ----
-    private void stopAudio(){followUpRequest++;handler.removeCallbacks(followUpTimer);if(piper!=null)piper.stop();if(player!=null){try{player.stop();}catch(Exception ignored){}player.release();player=null;}speaking=false;preparingVoice=false;if(audioManager!=null)audioManager.abandonAudioFocus(null);broadcast();}
+    private void stopAudio(){followUpRequest++;handler.removeCallbacks(followUpTimer);if(piper!=null)piper.stop();if(systemVoice!=null)systemVoice.stop();if(player!=null){try{player.stop();}catch(Exception ignored){}player.release();player=null;}speaking=false;preparingVoice=false;if(audioManager!=null)audioManager.abandonAudioFocus(null);broadcast();}
     private void checkFollowUp(){
         if(destroyed)return;
         // Older controllers checked before publishing the reply.
@@ -86,17 +86,19 @@ public final class CompanionService extends Service {
     }
     private void speechFinished(boolean finalReply){
         speaking=false;preparingVoice=false;broadcast();
-        if(finalReply){finishCaption(autoListen?4000:-1);if(autoListen){autoListen=false;handler.postDelayed(followUpTimer,350);}}
+        // A short action confirmation leaves at once; other replies stay a moment for reading.
+        if(finalReply){finishCaption(autoListen?4000:quickReply?200:-1);if(autoListen){autoListen=false;handler.postDelayed(followUpTimer,350);}}
     }
     private void speakLocal(String text,boolean finalReply){
         stopAudio();audioError="";if(text.trim().isEmpty())return;
         preparingVoice=true;changed();
-        piper.speak(text,new LocalPiper.Listener(){
+        LocalPiper.Listener listener=new LocalPiper.Listener(){
             public void started(){if(destroyed)return;preparingVoice=false;speaking=true;changed();}
             public void finished(){if(!destroyed)speechFinished(finalReply);}
             public void interrupted(){if(destroyed)return;autoListen=false;speechFinished(finalReply);}
             public void failed(String error){if(destroyed)return;audioError=error;autoListen=false;speaking=false;preparingVoice=false;try{state.put("voiceError",error);}catch(Exception ignored){}finishCaption(-1);changed();}
-        });
+        };
+        if(VoiceStore.system(this))systemVoice.speak(text,listener);else piper.speak(text,listener);
     }
     // ---- speech input ----
     /** Duplicate native-assistant and controller triggers must never stop an utterance. */
@@ -222,7 +224,7 @@ public final class CompanionService extends Service {
                 else if(!id.equals(lastReply)){
                     lastReply=id;if(data.optBoolean("standalone"))Api.prefs(CompanionService.this).edit().putString("native_last_reply",id).apply();boolean finalReply="idle".equals(data.optString("phase",""))&&!data.optString("reply","").isEmpty();
                     if(finalReply)android.util.Log.i("BuddyVoice","Reply received: id="+id+"; revision="+stateRevision);
-                    autoListen=finalReply&&data.optBoolean("followUp",false);
+                    autoListen=finalReply&&data.optBoolean("followUp",false);quickReply=finalReply&&data.optBoolean("quick",false);
                     // The caption stays while Buddy speaks and leaves shortly after (see finishCaption);
                     // with no audio to wait for, it shows for a few seconds of reading time.
                     if(finalReply)replyDisplay.received(id,SystemClock.uptimeMillis());else replyDisplay.clear();
@@ -290,5 +292,5 @@ public final class CompanionService extends Service {
         if(caption!=null){caption.setTextColor(Duo.palette(this).INK);caption.setBackground(panel());String text=captionText();if(text.isEmpty())caption.setVisibility(View.GONE);else{if(!text.contentEquals(caption.getText()))caption.setText(text);caption.setVisibility(View.VISIBLE);}}
     }
     private int dp(float n){return(int)(n*getResources().getDisplayMetrics().density+.5f);}
-    public void onDestroy(){destroyed=true;if(stateWatch!=null)stateWatch.close();handler.removeCallbacksAndMessages(null);stopAudio();if(piper!=null)piper.close();clearListening();if(bubbleRoot!=null)try{wm.removeView(bubbleRoot);}catch(Exception ignored){}speaking=false;super.onDestroy();}
+    public void onDestroy(){destroyed=true;if(stateWatch!=null)stateWatch.close();handler.removeCallbacksAndMessages(null);stopAudio();if(piper!=null)piper.close();if(systemVoice!=null)systemVoice.close();clearListening();if(bubbleRoot!=null)try{wm.removeView(bubbleRoot);}catch(Exception ignored){}speaking=false;super.onDestroy();}
 }

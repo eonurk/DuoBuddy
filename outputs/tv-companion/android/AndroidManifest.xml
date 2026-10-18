@@ -29,6 +29,9 @@
       <meta-data android:name="android.voice_interaction" android:resource="@xml/voice_interaction" />
     </service>
     <service android:name=".BuddySessionService" android:exported="true" android:permission="android.permission.BIND_VOICE_INTERACTION" />
+    <service android:name=".BuddyMediaListener" android:exported="true" android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" android:label="@string/app_name">
+      <intent-filter><action android:name="android.service.notification.NotificationListenerService" /></intent-filter>
+    </service>
     <service android:name=".CompanionService" android:exported="true" android:permission="android.permission.DUMP" />
     <activity android:name=".AmbientActivity" android:exported="true" android:permission="android.permission.DUMP" android:screenOrientation="landscape" android:theme="@android:style/Theme.Material.NoActionBar.Fullscreen" android:excludeFromRecents="true" android:launchMode="singleTask" />
     <service android:name=".BuddyDream" android:label="@string/app_name" android:exported="true" android:permission="android.permission.BIND_DREAM_SERVICE">

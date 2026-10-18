@@ -50,7 +50,7 @@ final class LocalPiper {
     void close(){stop();turns.close();worker.execute(()->{if(engine!=null)try{engine.getClass().getMethod("release").invoke(engine);}catch(Exception ignored){}engine=null;});worker.shutdown();}
     private void post(long turn,Runnable event){main.post(()->{if(turns.current(turn))event.run();});}
     private void initialize()throws Exception{
-        VoiceStore.Voice voice=VoiceStore.selected(context);
+        VoiceStore.Voice voice=VoiceStore.piper(context);
         if(engine!=null&&voice.id.equals(loadedVoice))return;
         if(engine!=null){engine.getClass().getMethod("release").invoke(engine);engine=null;}
         Process.setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);

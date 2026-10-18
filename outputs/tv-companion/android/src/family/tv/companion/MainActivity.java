@@ -80,7 +80,7 @@ public final class MainActivity extends Activity {
     private void chooseVoice(){
         java.util.List<VoiceStore.Voice> voices=VoiceStore.list(this);String[] labels=new String[voices.size()];
         String selected=VoiceStore.selected(this).id;int chosen=0;
-        for(int i=0;i<voices.size();i++){VoiceStore.Voice v=voices.get(i);if(v.id.equals(selected))chosen=i;labels[i]=v.label+" · "+(v.bundled?"included · fast default":VoiceStore.installed(this,v)?"downloaded":v.size()+" download");}
+        for(int i=0;i<voices.size();i++){VoiceStore.Voice v=voices.get(i);if(v.id.equals(selected))chosen=i;labels[i]=v.label+" · "+(v.id.equals(VoiceStore.SYSTEM)?"built in · fastest":v.bundled?"included · offline":VoiceStore.installed(this,v)?"downloaded":v.size()+" download");}
         Fonts.show(Fonts.dialog(this).setTitle("Voice").setSingleChoiceItems(labels,chosen,(dialog,index)->{dialog.dismiss();voiceDetails(voices.get(index));}).setNegativeButton("Done",null));
     }
     private void chooseModel(){
@@ -119,7 +119,7 @@ public final class MainActivity extends Activity {
     }
     private void voiceDetails(VoiceStore.Voice voice){
         boolean ready=VoiceStore.installed(this,voice);
-        AlertDialog.Builder builder=Fonts.dialog(this).setTitle(voice.label).setMessage(voice.description+(voice.bundled?". This voice is included and works offline.":". "+voice.size()+" stored on this TV. After downloading, it works offline. Speed depends on your TV."))
+        AlertDialog.Builder builder=Fonts.dialog(this).setTitle(voice.label).setMessage(voice.description+(voice.id.equals(VoiceStore.SYSTEM)?". It uses the TV's own speech engine, so replies start almost immediately.":voice.bundled?". This voice is included and works offline.":". "+voice.size()+" stored on this TV. After downloading, it works offline. Speed depends on your TV."))
             .setPositiveButton(ready?"Use & preview":"Download & use",(dialog,which)->{if(ready)useVoice(voice);else downloadVoice(voice);})
             .setNegativeButton("Back",(dialog,which)->chooseVoice());
         if(ready&&!voice.bundled)builder.setNeutralButton("Remove download",(dialog,which)->{stopSpeaking();VoiceStore.remove(this,voice);startForegroundService(new Intent(this,CompanionService.class).setAction("voice_changed"));chooseVoice();});

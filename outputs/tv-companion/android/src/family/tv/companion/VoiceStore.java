@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Small built-in voice catalogue; optional model downloads remain on the TV. */
 final class VoiceStore {
-    static final String DEFAULT="en_US-amy-low";
+    static final String DEFAULT="en_US-amy-low",SYSTEM="system";
     static final class Voice {
         final String id,label,description,url,sha;final long bytes;final int rate;final boolean bundled;
         Voice(String id,String label,String description,int rate,long bytes,String url,String sha,boolean bundled){this.id=id;this.label=label;this.description=description;this.rate=rate;this.bytes=bytes;this.url=url;this.sha=sha;this.bundled=bundled;}
@@ -33,7 +33,8 @@ final class VoiceStore {
     static synchronized List<Voice> list(Context c){
         if(voices!=null)return voices;
         ArrayList<Voice> result=new ArrayList<>();
-        result.add(new Voice(DEFAULT,"Amy Low","Fast default · included",16000,63104657,"","",true));
+        result.add(new Voice(SYSTEM,"TV voice","Fastest · the TV's own Google speech",0,0,"","",true));
+        result.add(new Voice(DEFAULT,"Amy Low","Buddy's own voice · included",16000,63104657,"","",true));
         try(InputStream in=c.getAssets().open("voices/catalog.json")){
             ByteArrayOutputStream bytes=new ByteArrayOutputStream();byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1)bytes.write(b,0,n);
             JSONArray all=new JSONArray(bytes.toString("UTF-8"));
@@ -45,7 +46,14 @@ final class VoiceStore {
         voices=Collections.unmodifiableList(result);return voices;
     }
     static Voice find(Context c,String id){for(Voice v:list(c))if(v.id.equals(id))return v;return list(c).get(0);}
-    static Voice selected(Context c){Voice v=find(c,Api.prefs(c).getString("voice_id",DEFAULT));return installed(c,v)?v:list(c).get(0);}
+    static Voice selected(Context c){
+        // Piper runs slower than real time on weak TVs, so existing installs move to the TV voice once; Piper stays selectable.
+        android.content.SharedPreferences prefs=Api.prefs(c);if(!prefs.getBoolean("voice_tv_default",false))prefs.edit().putString("voice_id",SYSTEM).putBoolean("voice_tv_default",true).apply();
+        Voice v=find(c,prefs.getString("voice_id",SYSTEM));return installed(c,v)?v:list(c).get(0);
+    }
+    static boolean system(Context c){return selected(c).id.equals(SYSTEM);}
+    /** The Piper model to load: the selected voice, or Amy Low while the TV voice is selected. */
+    static Voice piper(Context c){Voice v=selected(c);return v.id.equals(SYSTEM)?find(c,DEFAULT):v;}
     static File folder(Context c,Voice v){return new File(c.getFilesDir(),"voices/"+v.id);}
     static File model(Context c,Voice v){return new File(folder(c,v),"model.onnx");}
     static boolean installed(Context c,Voice v){return v.bundled||(model(c,v).length()==v.bytes&&new File(folder(c,v),"tokens.txt").isFile());}

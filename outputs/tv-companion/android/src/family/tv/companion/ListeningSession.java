@@ -3,7 +3,7 @@ package family.tv.companion;
 /** Bounded listening, preserving an utterance across premature recognizer endpoints. */
 final class ListeningSession {
     static final long MAX_DURATION_MS=30000;
-    static final long CONTINUATION_MS=2500;
+    static final long CONTINUATION_MS=1500;
     private boolean active,stopping;
     private boolean awaitingResult;
     private long startedAt,readyAt=-1,attemptAt,waitMs;

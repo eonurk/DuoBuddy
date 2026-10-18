@@ -3,6 +3,8 @@ package family.tv.companion;
 import android.content.*;
 import android.content.pm.*;
 import android.media.AudioManager;
+import android.media.MediaMetadata;
+import android.media.session.*;
 import android.net.Uri;
 import android.view.KeyEvent;
 import org.json.*;
@@ -29,7 +31,38 @@ final class LocalTvTools {
         throw new IllegalArgumentException("That app is not in the TV launcher list.");
     }
     JSONObject status(){
-        return TvJson.object("foreground",CompanionService.visible?context.getPackageName():TvAccess.foreground(),"musicActive",audio.isMusicActive(),"volume",Math.round(100f*audio.getStreamVolume(AudioManager.STREAM_MUSIC)/Math.max(1,audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC))),"accessible",TvAccess.enabled(),"screenReading","Accessible text only when TV control is enabled; no ADB or screenshots.");
+        return TvJson.object("foreground",CompanionService.visible?context.getPackageName():TvAccess.foreground(),"musicActive",audio.isMusicActive(),"volume",Math.round(100f*audio.getStreamVolume(AudioManager.STREAM_MUSIC)/Math.max(1,audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC))),"accessible",TvAccess.enabled(),"screenReading","Accessible text only when TV control is enabled; no ADB or screenshots.","nowPlaying",nowPlaying());
+    }
+    /** Title, channel or artist and state from other apps' media sessions. Android only shares these with Buddy's notification access turned on. */
+    private Object nowPlaying(){
+        try{
+            MediaSessionManager sessions=(MediaSessionManager)context.getSystemService(Context.MEDIA_SESSION_SERVICE);PackageManager pm=context.getPackageManager();JSONArray result=new JSONArray();
+            for(MediaController controller:sessions.getActiveSessions(new ComponentName(context,BuddyMediaListener.class))){
+                String pkg=controller.getPackageName(),label=pkg;try{label=pm.getApplicationLabel(pm.getApplicationInfo(pkg,0)).toString();}catch(PackageManager.NameNotFoundException ignored){}
+                PlaybackState state=controller.getPlaybackState();MediaMetadata meta=controller.getMetadata();
+                JSONObject item=TvJson.object("app",label,"state",state==null?"unknown":stateName(state.getState()));
+                if(meta!=null){
+                    String title=metaText(meta,MediaMetadata.METADATA_KEY_DISPLAY_TITLE,MediaMetadata.METADATA_KEY_TITLE),by=metaText(meta,MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE,MediaMetadata.METADATA_KEY_ARTIST,MediaMetadata.METADATA_KEY_ALBUM_ARTIST,MediaMetadata.METADATA_KEY_AUTHOR);
+                    if(title!=null)LocalData.put(item,"title",title);if(by!=null&&!by.equals(title))LocalData.put(item,"by",by);
+                }
+                result.put(item);
+            }
+            return result;
+        }catch(SecurityException e){return "Unavailable until Buddy's notification access is turned on.";}
+    }
+    private static String metaText(MediaMetadata meta,String... keys){
+        for(String key:keys){CharSequence value=meta.getText(key);if(value==null)continue;String text=value.toString().replaceAll("\\p{Cntrl}"," ").trim();if(!text.isEmpty())return text.length()>160?text.substring(0,160):text;}
+        return null;
+    }
+    private static String stateName(int state){
+        switch(state){
+            case PlaybackState.STATE_PLAYING:return "playing";
+            case PlaybackState.STATE_PAUSED:return "paused";
+            case PlaybackState.STATE_BUFFERING:case PlaybackState.STATE_CONNECTING:return "loading";
+            case PlaybackState.STATE_STOPPED:case PlaybackState.STATE_NONE:return "stopped";
+            case PlaybackState.STATE_ERROR:return "error";
+            default:return "other";
+        }
     }
     boolean playing(){return audio.isMusicActive();}
     JSONObject run(String name,JSONObject args)throws Exception{

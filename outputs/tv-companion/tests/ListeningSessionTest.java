@@ -33,7 +33,7 @@ public final class ListeningSessionTest {
         s.begin(90000,false);int firstSegment=s.attempt(90000);s.ready(90100);
         s.speech(90500);s.partial(90600,"can you");s.result(91000,"Can you");
         check(!s.submit(91000),"a final engine result does not submit immediately");
-        check(!s.submit(93499),"a natural pause is allowed after a short result");
+        check(!s.submit(92499),"a natural pause is allowed after a short result");
         check(s.retry(92000,true,false),"empty continuation attempts do not discard the first segment");
         s.attempt(91200);check(!s.current(firstSegment),"duplicate results from a completed attempt are ignored");
         s.speech(92500);s.partial(93000,"tell me");
@@ -41,7 +41,7 @@ public final class ListeningSessionTest {
         check(s.text().equals("Can you tell me"),"the live caption includes completed and partial speech");
         s.result(96000,"tell me the time");
         check(s.text().equals("Can you tell me the time"),"recognized segments form one request");
-        check(!s.submit(98499)&&s.submit(98500),"one request is ready after the continuation pause");
+        check(!s.submit(97499)&&s.submit(97500),"one request is ready after the continuation pause");
         s.close();check(!s.submit(99000),"a delayed submit cannot send a closed session");
 
         s.begin(100000,false);s.attempt(100000);s.result(101000,"No");s.result(102000,"no");
