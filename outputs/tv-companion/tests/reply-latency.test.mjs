@@ -46,7 +46,17 @@ else console.log('');
 `, {mode: 0o700});
   // Only this disposable controller intercepts model calls; the test never contacts OpenAI.
   const preload = join(dir, 'model-fixture.mjs');
-  await writeFile(preload, `const original=globalThis.fetch; globalThis.fetch=(url,options)=>String(url).startsWith('https://api.openai.com/')?Promise.resolve(new Response(JSON.stringify({output:[{type:'message',content:[{type:'output_text',text:'I am ready. What would you like to watch?'}]}],usage:{input_tokens:1,output_tokens:1}}),{headers:{'Content-Type':'application/json'}})):original(url,options);`);
+  await writeFile(preload, `const original=globalThis.fetch; globalThis.fetch=(url,options)=>{
+    if(!String(url).startsWith('https://api.openai.com/'))return original(url,options);
+    const body=JSON.parse(options.body);
+    let output=[{type:'message',content:[{type:'output_text',text:'I am ready. What would you like to watch?'}]}];
+    if(body.input.some(item=>item.role==='user'&&item.content==='Loading wait regression')){
+      const waited=body.input.some(item=>item.type==='function_call_output');
+      if(waited&&body.tools.some(tool=>tool.name==='wait'))throw Error('Repeated waiting was still offered');
+      output=waited?[{type:'message',content:[{type:'output_text',text:'Loading check complete.'}]}]:[{type:'function_call',name:'wait',call_id:'loading-wait',arguments:'{"seconds":5}'}];
+    }
+    return Promise.resolve(new Response(JSON.stringify({output,usage:{input_tokens:1,output_tokens:1}}),{headers:{'Content-Type':'application/json'}}));
+  };`);
   const port = await unusedPort(), admin = await unusedPort(), ready = join(runtime, 'ready.json');
   child = spawn(process.execPath, ['--import', preload, join(root, 'server.mjs')], {detached: true, env: {...process.env, TV_RUNTIME_DIR: runtime, TV_ADB: adb, TV_DEVICE: 'fixture:5555', TV_VOICE_ENGINE: 'mac', TV_PORT: String(port), TV_ADMIN_PORT: String(admin), TV_READY_FILE: ready}, stdio: ['ignore', 'pipe', 'pipe']});
   let output = ''; child.stdout.on('data', data => {output += data;}); child.stderr.on('data', data => {output += data;});
@@ -78,4 +88,9 @@ else console.log('');
   await request('/api/chat', {text: 'Hello again'});
   do {state = await (await request(`/api/state?since=${state.revision}&session=${state.session}`)).json();} while (!state.speechText || state.busy);
   assert.equal((await (await request('/api/follow-up?replyId=' + state.replyId)).json()).allowed, false);
+  const waitStarted = performance.now();
+  await request('/api/chat', {text: 'Loading wait regression'});
+  do {state = await (await request(`/api/state?since=${state.revision}&session=${state.session}`)).json();} while (state.busy || state.speechText !== 'Loading check complete.');
+  assert.ok(performance.now() - waitStarted < 2000, 'Loading completion must not retain a five-second wait');
+  assert.equal(state.phase, 'idle');
 });

@@ -27,7 +27,7 @@ export const TOOLS = [
   fn('tap', 'Tap a point using pixel coordinates from the latest read_screen.', {x: {type: 'integer'}, y: {type: 'integer'}}),
   fn('type_text', 'Type into the focused text field, optionally pressing Enter afterwards.',
     {text: {type: 'string'}, submit: {type: 'boolean'}}),
-  fn('wait', 'Wait for an app to load before looking again.', {seconds: {type: 'integer', description: '1–8'}}),
+  fn('wait', 'Briefly yield only when the latest screen shows loading, then check again. Never wait after the requested result is verified. Each call waits at most one second.', {seconds: {type: 'integer', description: 'Use 1. Older values up to 8 are shortened to 1 second.'}}),
   fn('tv_status', 'Refresh foreground app, playback title/state and volume. Prefer this over screenshots for what is playing; refresh stale or missing context and check playback after changes.'),
   fn('timer', 'Set, list or cancel timers and reminders. When a timer fires, DuoBuddy speaks the label.',
     {action: {type: 'string', enum: ['set', 'list', 'cancel']}, seconds: nullable('integer'), label: nullable('string'), id: nullable('integer')}),
@@ -40,6 +40,25 @@ export const TOOLS = [
 ];
 
 export const WEB_SEARCH_TOOL = {type: 'web_search'};
+
+// One loading grace period per action. Read-only checks must not re-enable a
+// wait loop; another action is needed before there is something new to load.
+export function createTurnToolRunner(run) {
+  let canWait = true;
+  const loadingActions = new Set(['open_app', 'search_app', 'open_url', 'remote', 'media', 'tap', 'type_text']);
+  return {
+    tools: tools => canWait ? tools : tools.filter(tool => tool.name !== 'wait'),
+    async run(name, args) {
+      if (name === 'wait') {
+        if (!canWait) throw Error('Already waited for this action. Check the result and finish if successful; do not keep waiting.');
+        canWait = false;
+      }
+      const result = await run(name, args);
+      if (!result.error && loadingActions.has(name)) canWait = true;
+      return result;
+    }
+  };
+}
 
 // Actions whose result the model does not need to read back: when it already said its
 // reply alongside one of these and the action succeeded, the turn ends without another call.
@@ -172,7 +191,11 @@ export function createToolRunner({tv, timers, memory, status = () => {}, onProfi
       }
       case 'tap': await tv.shell(`input tap ${args.x} ${args.y}`); await pause(650); return {message: `Tapped ${args.x}, ${args.y}.`};
       case 'type_text': await tv.pasteText(args.text); if (args.submit) await tv.keys(KEYS.enter); return {message: 'Typed into the focused field' + (args.submit ? ' and pressed Enter.' : '.')};
-      case 'wait': await pause(args.seconds * 1000); return {message: `Waited ${args.seconds}s.`};
+      case 'wait': {
+        const seconds = Math.min(args.seconds, 1);
+        await pause(seconds * 1000);
+        return {message: `Waited ${seconds}s. Check the result now; if the requested result is verified, finish immediately without more waits or navigation.`};
+      }
       case 'tv_status': return {message: describeSnapshot(await tv.snapshot().catch(() => null))};
       case 'timer': {
         if (args.action === 'set') {const t = timers.set(args.seconds, args.label); return {message: `Timer ${t.id} set for ${spokenDuration(args.seconds)}${t.label ? ' (' + t.label + ')' : ''}.`};}

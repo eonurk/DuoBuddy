@@ -1,0 +1,1 @@
+<voice-interaction-service xmlns:android="http://schemas.android.com/apk/res/android" android:sessionService="family.tv.companion.BuddySessionService" android:settingsActivity="family.tv.companion.NativeSettingsActivity" android:supportsAssist="true" />

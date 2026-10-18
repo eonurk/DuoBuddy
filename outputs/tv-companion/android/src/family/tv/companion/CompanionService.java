@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Buddy's always-on presence: watches the controller, synthesizes speech on the TV, owns the
+ * Buddy's always-on presence: watches the local runtime, synthesizes speech on the TV, owns the
  * microphone and draws the little companion with live captions over any app.
  */
 public final class CompanionService extends Service {
@@ -60,12 +60,14 @@ public final class CompanionService extends Service {
     }
     public int onStartCommand(Intent intent,int flags,int id){
         String action=intent==null?null:intent.getAction();
+        if("pause_assistant".equals(action)){autoListen=false;stopAudio();clearListening();presence("idle");}
         if("stop_speaking".equals(action)){autoListen=false;stopAudio();finishCaption(400);}
         if("voice_test".equals(action)){
             clearListening();autoListen=false;captionReply="Hi! I'm your DuoBuddy. Shall we find something good to watch?";
             captionUntil=SystemClock.uptimeMillis()+120000;speakLocal(captionReply,true);
         }
         if("voice_changed".equals(action)){autoListen=false;stopAudio();piper.warm();}
+        if("local_timer".equals(action))LocalController.get(this).fireTimer(intent.getIntExtra("id",-1));
         if(LISTEN.equals(action))startListening(false);
         if(FINISH_LISTEN.equals(action))finishListening();
         refreshBubble();return START_STICKY;
@@ -96,20 +98,6 @@ public final class CompanionService extends Service {
             public void failed(String error){if(destroyed)return;audioError=error;autoListen=false;speaking=false;preparingVoice=false;try{state.put("voiceError",error);}catch(Exception ignored){}finishCaption(-1);changed();}
         });
     }
-    private void playAudio(String path){
-        stopAudio();audioError="";if(path.isEmpty())return;
-        if(!path.matches("/api/audio/[a-f0-9]{32}\\.wav")){audioError="Invalid Piper audio path.";return;}
-        try{
-            player=new MediaPlayer();player.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build());
-            HashMap<String,String> headers=new HashMap<>();headers.put("Authorization","Bearer "+Api.prefs(this).getString("token",""));
-            player.setDataSource(this,Uri.parse(Api.prefs(this).getString("server","")+path),headers);
-            player.setOnPreparedListener(p->{if(destroyed){stopAudio();return;}audioManager.requestAudioFocus(null,AudioManager.STREAM_MUSIC,AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);p.start();speaking=true;android.util.Log.i("BuddyVoice","Piper audio started");broadcast();});
-            player.setOnCompletionListener(p->{android.util.Log.i("BuddyVoice","Piper audio completed");stopAudio();finishCaption(autoListen?4000:-1);if(autoListen){autoListen=false;handler.postDelayed(followUpTimer,350);}});
-            player.setOnErrorListener((p,what,extra)->{audioError="Piper audio could not play ("+what+", "+extra+").";android.util.Log.e("BuddyVoice",audioError);autoListen=false;stopAudio();finishCaption(-1);return true;});
-            player.prepareAsync();
-        }catch(Exception e){audioError="Piper playback: "+e.getMessage();android.util.Log.e("BuddyVoice",audioError);stopAudio();}
-    }
-
     // ---- speech input ----
     /** Duplicate native-assistant and controller triggers must never stop an utterance. */
     private void startListening(boolean followUp){
@@ -218,7 +206,7 @@ public final class CompanionService extends Service {
     private void broadcast(){Intent i=new Intent("family.tv.companion.STATE");i.setPackage(getPackageName());sendBroadcast(i);handler.post(()->{if(bubble!=null){bubble.phase=effectivePhase();bubble.talking=speaking;}});}
     private String effectivePhase(){return listening?"listening":preparingVoice?"thinking":state.optString("phase","idle");}
 
-    // ---- immediate state delivery, with polling fallback for older controllers ----
+    // ---- immediate local state delivery ----
     private final Runnable poll=new Runnable(){public void run(){
         if(destroyed)return;
         if(!Api.paired(CompanionService.this)){handler.postDelayed(this,2000);return;}
@@ -227,12 +215,12 @@ public final class CompanionService extends Service {
             polling=false;if(destroyed)return;
             if(data!=null){
                 String session=data.optString("session","");
-                if(!session.equals(stateSession)){lastReply=null;stateSession=session;}
+                if(!session.equals(stateSession)){lastReply=data.optBoolean("standalone")?Api.prefs(CompanionService.this).getString("native_last_reply",""):null;stateSession=session;}
                 stateRevision=data.optLong("revision",-1);
                 state=data;if(listening||"thinking".equals(data.optString("phase"))||"acting".equals(data.optString("phase")))replyDisplay.clear();String id=data.optString("replyId","");
                 if(lastReply==null)lastReply=id;
                 else if(!id.equals(lastReply)){
-                    lastReply=id;boolean finalReply="idle".equals(data.optString("phase",""))&&!data.optString("reply","").isEmpty();
+                    lastReply=id;if(data.optBoolean("standalone"))Api.prefs(CompanionService.this).edit().putString("native_last_reply",id).apply();boolean finalReply="idle".equals(data.optString("phase",""))&&!data.optString("reply","").isEmpty();
                     if(finalReply)android.util.Log.i("BuddyVoice","Reply received: id="+id+"; revision="+stateRevision);
                     autoListen=finalReply&&data.optBoolean("followUp",false);
                     // The caption stays while Buddy speaks and leaves shortly after (see finishCaption);
@@ -241,7 +229,7 @@ public final class CompanionService extends Service {
                     if(finalReply){captionReply=data.optString("reply","");captionUntil=SystemClock.uptimeMillis()+120000;}
                     String speech=data.optString("speechText",finalReply?data.optString("reply",""):"");
                     if(!speech.isEmpty())speakLocal(speech,finalReply);
-                    else playAudio(data.optString("audioPath",""));
+                    else stopAudio();
                 }
                 JSONObject r=data.optJSONObject("reaction");int rid=r==null?0:r.optInt("id",0);
                 // The first poll only records the latest reaction, so a restart doesn't replay it.
@@ -249,7 +237,7 @@ public final class CompanionService extends Service {
                 else if(rid!=lastReaction){lastReaction=rid;reaction=r;long ms=r==null?0:Math.max(1500,Math.min(10000,r.optLong("ms",4500)));reactionUntil=SystemClock.uptimeMillis()+ms;handler.postDelayed(()->refreshBubble(),ms+80);}
                 if(!audioError.isEmpty())try{state.put("voiceError",audioError);}catch(Exception ignored){}
                 broadcast();
-            }else{try{state.put("status","Mac connection unavailable");state.put("phase","idle");state.put("error",error);}catch(Exception ignored){}broadcast();}
+            }else{try{state.put("status","Local runtime unavailable");state.put("phase","idle");state.put("error",error);}catch(Exception ignored){}broadcast();}
             refreshBubble();handler.postDelayed(poll,data!=null&&data.optBoolean("stateWait",false)?0:1300);
         });
     }};

@@ -20,7 +20,7 @@ public final class MainActivity extends Activity {
     private final BroadcastReceiver receiver=new BroadcastReceiver(){public void onReceive(Context c,Intent i){render();}};
     public void onCreate(Bundle b){colors=Duo.palette(this);setTheme(Duo.theme(this));super.onCreate(b);getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);configure(getIntent());build();startForegroundService(new Intent(this,CompanionService.class));}
     protected void onNewIntent(Intent i){super.onNewIntent(i);setIntent(i);configure(i);if(i.getBooleanExtra("voice_test",false))startForegroundService(new Intent(this,CompanionService.class).setAction("voice_test"));render();beginPendingAssist();}
-    private void configure(Intent i){if(Intent.ACTION_ASSIST.equals(i.getAction()))pendingAssist=true;String server=i.getStringExtra("server"),token=i.getStringExtra("token");if(server!=null&&token!=null&&server.matches("http://[0-9.]+:[0-9]+")&&token.matches("[a-f0-9]{64}"))Api.prefs(this).edit().putString("server",server).putString("token",token).apply();}
+    private void configure(Intent i){if(Intent.ACTION_ASSIST.equals(i.getAction()))pendingAssist=true;}
     private void beginPendingAssist(){if(!pendingAssist||!resumed)return;pendingAssist=false;android.util.Log.i("BuddyVoice","Remote assistant invoked");new Handler(Looper.getMainLooper()).postDelayed(()->{if(resumed&&!controllerHandlesRemote()&&!CompanionService.listening)listen();},350);}
     protected void onResume(){super.onResume();if(colors!=Duo.palette(this)){recreate();return;}resumed=true;CompanionService.visible=true;registerReceiver(receiver,new IntentFilter("family.tv.companion.STATE"));startForegroundService(new Intent(this,CompanionService.class));render();beginPendingAssist();}
     protected void onPause(){super.onPause();resumed=false;CompanionService.visible=false;try{unregisterReceiver(receiver);}catch(Exception ignored){}startForegroundService(new Intent(this,CompanionService.class));}
@@ -30,6 +30,7 @@ public final class MainActivity extends Activity {
         LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setBackgroundColor(colors.CANVAS);root.setPadding(dp(48),dp(38),dp(56),dp(34));setContentView(root);
         LinearLayout brand=new LinearLayout(this);brand.setGravity(Gravity.CENTER_VERTICAL);
         brand.addView(Duo.text(this,Duo.name(this),22,colors.INK,700),new LinearLayout.LayoutParams(0,-2,1));
+        brand.addView(Duo.quiet(this,"model","Model",()->chooseModel()),new LinearLayout.LayoutParams(-2,dp(44)));
         brand.addView(Duo.quiet(this,"music","Voice",()->chooseVoice()),new LinearLayout.LayoutParams(-2,dp(44)));
         brand.addView(Duo.quiet(this,Duo.night(this)?"moon":"sun","Appearance",()->chooseAppearance()),new LinearLayout.LayoutParams(-2,dp(44)));
         brand.setClipChildren(false);root.addView(brand,new LinearLayout.LayoutParams(-1,dp(44)));
@@ -82,6 +83,40 @@ public final class MainActivity extends Activity {
         for(int i=0;i<voices.size();i++){VoiceStore.Voice v=voices.get(i);if(v.id.equals(selected))chosen=i;labels[i]=v.label+" · "+(v.bundled?"included · fast default":VoiceStore.installed(this,v)?"downloaded":v.size()+" download");}
         Fonts.show(Fonts.dialog(this).setTitle("Voice").setSingleChoiceItems(labels,chosen,(dialog,index)->{dialog.dismiss();voiceDetails(voices.get(index));}).setNegativeButton("Done",null));
     }
+    private void chooseModel(){
+        Api.request(this,"/api/models",null,(data,error)->{
+            if(isFinishing()||isDestroyed())return;
+            if(data==null){Fonts.show(Fonts.dialog(this).setTitle("AI model").setMessage(error==null?"Could not load models.":error).setPositiveButton("OK",null));return;}
+            JSONArray providers=data.optJSONArray("providers");
+            java.util.ArrayList<String> labels=new java.util.ArrayList<>(),ids=new java.util.ArrayList<>(),owners=new java.util.ArrayList<>();
+            java.util.ArrayList<Boolean> ready=new java.util.ArrayList<>();int selected=-1;
+            if(providers!=null)for(int i=0;i<providers.length();i++){
+                JSONObject owner=providers.optJSONObject(i);if(owner==null)continue;JSONArray models=owner.optJSONArray("models");if(models==null)continue;
+                String saved=owner.optString("savedModel","");boolean savedListed=false;
+                for(int j=0;j<models.length();j++){
+                    JSONObject m=models.optJSONObject(j);if(m==null)continue;
+                    String id=m.optString("id");if(id.equals(saved))savedListed=true;
+                    ids.add(id);owners.add(owner.optString("id"));ready.add(owner.optBoolean("savedKey"));
+                    labels.add(m.optString("label",id).replace(" · economical","")+" · "+owner.optString("label")+(owner.optBoolean("savedKey")?"":" (key needed)"));
+                }
+                if(!savedListed&&!saved.isEmpty()&&owner.optBoolean("savedKey")){
+                    ids.add(saved);owners.add(owner.optString("id"));ready.add(true);labels.add(saved+" · "+owner.optString("label"));
+                }
+            }
+            for(int i=0;i<ids.size();i++)if(ids.get(i).equals(data.optString("model"))&&owners.get(i).equals(data.optString("provider")))selected=i;
+            if(labels.isEmpty()){Fonts.show(Fonts.dialog(this).setTitle("AI model").setMessage("No models available.").setPositiveButton("OK",null));return;}
+            Fonts.show(Fonts.dialog(this).setTitle("AI model").setSingleChoiceItems(labels.toArray(new String[0]),selected,(dialog,which)->{
+                dialog.dismiss();
+                if(!ready.get(which)){Fonts.show(Fonts.dialog(this).setTitle("API key needed").setMessage("Add this provider’s API key on this TV before using "+ids.get(which)+". Your current model is unchanged.").setPositiveButton("Set up on phone",(d,w)->startActivity(new Intent(this,KeySetupActivity.class).putExtra("provider",owners.get(which)).putExtra("model",ids.get(which)))).setNegativeButton("Cancel",null));return;}
+                heard.setText("Connecting to "+ids.get(which)+"…");
+                Api.request(this,"/api/model",Api.json("provider",owners.get(which),"model",ids.get(which)),(result,failure)->{
+                    if(isFinishing()||isDestroyed())return;
+                    if(failure!=null){heard.setText(failure);Fonts.show(Fonts.dialog(this).setTitle("Couldn’t switch model").setMessage(failure).setPositiveButton("OK",null));}
+                    else{Api.prefs(this).edit().putString("model_provider",owners.get(which)).putString("model_id",ids.get(which)).apply();heard.setText(ids.get(which)+" connected");chooseModel();}
+                });
+            }).setNeutralButton("Settings",(d,w)->startActivity(new Intent(this,NativeSettingsActivity.class))).setNegativeButton("Done",null));
+        });
+    }
     private void voiceDetails(VoiceStore.Voice voice){
         boolean ready=VoiceStore.installed(this,voice);
         AlertDialog.Builder builder=Fonts.dialog(this).setTitle(voice.label).setMessage(voice.description+(voice.bundled?". This voice is included and works offline.":". "+voice.size()+" stored on this TV. After downloading, it works offline. Speed depends on your TV."))
@@ -109,13 +144,13 @@ public final class MainActivity extends Activity {
         return (h<5?"Good night":h<12?"Good morning":h<18?"Good afternoon":h<22?"Good evening":"Good night")+(person.isEmpty()?"":", "+person);
     }
     private void render(){if(status==null)return;JSONObject s=CompanionService.state;boolean listening=CompanionService.listening;String phase=listening?"listening":s.optString("phase","idle");face.phase=phase;face.talking=CompanionService.speaking;
-        String message=listening?"Listening":CompanionService.preparingVoice?"Preparing voice":s.optString("status",Api.paired(this)?"Connecting to your Mac":"Pair this TV from your Mac");
+        String message=listening?"Listening":CompanionService.preparingVoice?"Preparing voice":s.optString("status","Ready when you are");
         int dot=listening?Duo.SKY:phase.equals("thinking")||phase.equals("acting")?Duo.ORANGE:Duo.GREEN;
         android.text.SpannableString pill=new android.text.SpannableString("●  "+message);pill.setSpan(new android.text.style.ForegroundColorSpan(dot),0,1,0);status.setText(pill);
         boolean working=phase.equals("thinking")||phase.equals("acting");
         String answer=!listening&&!working&&CompanionService.replyDisplay.visible(s.optString("replyId",""),SystemClock.uptimeMillis(),CompanionService.speaking||CompanionService.preparingVoice)?s.optString("reply",""):"",user=s.optString("user","");
         greeting.setText(!answer.isEmpty()&&!user.isEmpty()?"You asked: “"+user+"”":greetingText());
-        String text=!answer.isEmpty()?answer:listening?"I’m listening…":working?phase.equals("acting")?"On it…":"Let me think…":!s.optBoolean("configured",true)&&Api.paired(this)?"Add your API key on the Mac setup page, then press Talk.":"What shall we do today?";
+        String text=!answer.isEmpty()?answer:listening?"I’m listening…":working?phase.equals("acting")?"On it…":"Let me think…":!s.optBoolean("configured",true)&&Api.paired(this)?"Choose Model to add your API key, then press Talk.":"What shall we do today?";
         reply.setText(text);reply.setTextSize(text.length()>140?22:text.length()>70?26:30);
         String error=CompanionService.localError.isEmpty()?s.optString("voiceError",s.optString("error","")):CompanionService.localError;
         heard.setText(listening&&!CompanionService.heard.isEmpty()?"“"+CompanionService.heard+"”":error.isEmpty()?(working&&!user.isEmpty()?"You: "+user:""):error);

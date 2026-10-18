@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">Buddy</string>
+  <string name="access_description">Lets Buddy navigate TV apps and read accessible screen text when you ask. Password fields are excluded. Enable only if you want TV control.</string>
 </resources>

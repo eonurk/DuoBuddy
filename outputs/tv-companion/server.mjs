@@ -10,7 +10,7 @@ import {DEFAULT_MODEL, responseRequest} from './model-config.mjs';
 import {DEFAULT_VOICE, VOICES, validateVoice} from './voice-config.mjs';
 import {RemoteButtonMonitor} from './remote-button.mjs';
 import {TvController, describeSnapshot, describeDevice} from './tv.mjs';
-import {TOOLS, WEB_SEARCH_TOOL, createToolRunner, isOneShot, legacyToCall} from './tools.mjs';
+import {TOOLS, WEB_SEARCH_TOOL, createToolRunner, createTurnToolRunner, isOneShot, legacyToCall} from './tools.mjs';
 import {buildInstructions} from './persona.mjs';
 import {Timers} from './timers.mjs';
 import {Memory} from './memory.mjs';
@@ -318,12 +318,13 @@ async function chat(text, {followUp = false} = {}) {
     // Old chat is resent with every call, so keep only a short, recent window.
     const input = [...history.slice(-HISTORY_ITEMS), {role: 'user', content: text}];
     let final = '';
+    const turnTools = createTurnToolRunner(runTool);
     const used = {input: 0, cached: 0, output: 0, calls: 0}, started = Date.now();
     for (let round = 0; round < MAX_ROUNDS; round++) {
       if (commandAbort.signal.aborted) throw Error('Request stopped.');
       let response;
       try {
-        response = await api('responses', responseRequest({model, instructions, input, tools: useWeb && webSearchOn ? [...TOOLS, WEB_SEARCH_TOOL] : TOOLS}));
+        response = await api('responses', responseRequest({model, instructions, input, tools: turnTools.tools(useWeb && webSearchOn ? [...TOOLS, WEB_SEARCH_TOOL] : TOOLS)}));
       } catch (e) {
         // A model without hosted web search should still work for everything else.
         if (webSearchOn && /web_search|tool type|not supported/i.test(e.message)) {webSearchOn = false; update({webSearch: false}); round--; continue;}
@@ -345,7 +346,7 @@ async function chat(text, {followUp = false} = {}) {
       let failed = false;
       for (const [i, call] of calls.entries()) {
         let result;
-        try {if (!parsed[i]) throw Error('Arguments were not valid JSON.'); result = await runTool(call.name, parsed[i]);}
+        try {if (!parsed[i]) throw Error('Arguments were not valid JSON.'); result = await turnTools.run(call.name, parsed[i]);}
         catch (e) {result = {error: e.message}; console.log('Tool ' + call.name + ' failed: ' + e.message);}
         console.log('Tool ' + call.name + (result.error ? ' -> error' : ' -> ok'));
         if (result.error) failed = true;
@@ -413,6 +414,27 @@ function chatText(b) {
   if (!apiKey) throw Error('Add your API key on the Mac setup page.');
   return text;
 }
+async function configureModel(b) {
+  if (busy || tvSetupBusy || configuring) throw Error('Please wait for the current request.');
+  const nextProvider = b.provider || 'openai', info = providerInfo(nextProvider);
+  const nextModel = String(b.model || info.defaultModel).trim();
+  if (b.apiKey != null && typeof b.apiKey !== 'string') throw Error('Enter an API key.');
+  const nextKey = (b.apiKey || '').trim() || accounts[nextProvider]?.apiKey || '';
+  if (busy || tvSetupBusy || configuring) throw Error('Please wait for the current request.');
+  configuring = true;
+  try {
+    // Validate access without starting a paid generation; keep the active choice on failure.
+    await validateCredentials(nextProvider, nextModel, nextKey);
+    const nextAccounts = {...accounts, [nextProvider]: {apiKey: nextKey, model: nextModel}};
+    const saved = {provider: nextProvider, apiKey: nextKey, model: nextModel, accounts: nextAccounts};
+    const temporary = join(RUNTIME, 'credentials.json.tmp');
+    await writeFile(temporary, JSON.stringify(saved), {mode: 0o600}); await chmod(temporary, 0o600); await rename(temporary, join(RUNTIME, 'credentials.json'));
+    if (provider !== nextProvider || model !== nextModel) {history = []; lastChatAt = 0;}
+    apiKey = nextKey; model = nextModel; provider = nextProvider; accounts = nextAccounts;
+    update({configured: true, model, status: 'Ready when you are', error: ''}); return {ok: true};
+  } finally {configuring = false; update({});}
+}
+
 async function route(req, res, admin = false) {
   try {
     const url = new URL(req.url, 'http://localhost');
@@ -522,27 +544,7 @@ async function route(req, res, admin = false) {
         if (b.preview === true) voiceTest();
         return send(res, 200, {ok: true, voice: voiceId});
       }
-      if (url.pathname === '/admin/configure' && req.method === 'POST') {
-        if (busy || tvSetupBusy || configuring) throw Error('Please wait for the current request.');
-        const b = await body(req);
-        const nextProvider = b.provider || 'openai', info = providerInfo(nextProvider);
-        const nextModel = String(b.model || info.defaultModel).trim();
-        if (b.apiKey != null && typeof b.apiKey !== 'string') throw Error('Enter an API key.');
-        const nextKey = (b.apiKey || '').trim() || accounts[nextProvider]?.apiKey || '';
-        if (busy || tvSetupBusy || configuring) throw Error('Please wait for the current request.');
-        configuring = true;
-        try {
-          // Validate access without starting a paid generation; keep the active choice on failure.
-          await validateCredentials(nextProvider, nextModel, nextKey);
-          const nextAccounts = {...accounts, [nextProvider]: {apiKey: nextKey, model: nextModel}};
-          const saved = {provider: nextProvider, apiKey: nextKey, model: nextModel, accounts: nextAccounts};
-          const temporary = join(RUNTIME, 'credentials.json.tmp');
-          await writeFile(temporary, JSON.stringify(saved), {mode: 0o600}); await chmod(temporary, 0o600); await rename(temporary, join(RUNTIME, 'credentials.json'));
-          if (provider !== nextProvider || model !== nextModel) {history = []; lastChatAt = 0;}
-          apiKey = nextKey; model = nextModel; provider = nextProvider; accounts = nextAccounts;
-          update({configured: true, model, status: 'Ready when you are', error: ''}); return send(res, 200, {ok: true});
-        } finally {configuring = false; update({});}
-      }
+      if (url.pathname === '/admin/configure' && req.method === 'POST') return send(res, 200, await configureModel(await body(req)));
       if (url.pathname === '/admin/chat' && req.method === 'POST') {void chat(chatText(await body(req))); return send(res, 202, {ok: true});}
       if (url.pathname === '/admin/action' && req.method === 'POST') {
         if (busy || tvSetupBusy) throw Error('An assistant request is in progress.');
@@ -574,6 +576,13 @@ async function route(req, res, admin = false) {
         const current = () => !busy && !tvSetupBusy && state.phase === 'idle' && state.followUp && String(state.replyId) === replyId;
         const allowed = current() && await mayListenAgain();
         return send(res, 200, {allowed: !!allowed && current()});
+      }
+      if (url.pathname === '/api/models' && req.method === 'GET') return send(res, 200, catalog(provider, model, accounts));
+      if (url.pathname === '/api/model' && req.method === 'POST') {
+        const selected = await body(req), info = providerInfo(selected.provider);
+        if (!info.models.some(item => item.id === selected.model) && accounts[selected.provider]?.model !== selected.model) throw Error('Choose a model from the picker.');
+        if (!accounts[selected.provider]?.apiKey) throw Error(info.label + ' needs an API key before you can use this model.');
+        return send(res, 200, await configureModel({provider: selected.provider, model: selected.model}));
       }
       if (url.pathname === '/api/ambient' && req.method === 'GET') return send(res, 200, await ambientData());
       if (url.pathname === '/api/apps' && req.method === 'GET') {

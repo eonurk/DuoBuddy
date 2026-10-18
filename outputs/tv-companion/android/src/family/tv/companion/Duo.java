@@ -54,6 +54,7 @@ final class Duo {
         protected void onDraw(Canvas c){
             float s=Math.min(getWidth(),getHeight())/24f;c.save();c.translate((getWidth()-24*s)/2,(getHeight()-24*s)/2);c.scale(s,s);p.setStrokeWidth(1.8f);path.reset();
             switch(name){
+                case "model":c.drawRoundRect(6,6,18,18,3,3,p);c.drawCircle(12,12,2.5f,p);for(int n=8;n<=16;n+=4){c.drawLine(n,3,n,6,p);c.drawLine(n,18,n,21,p);c.drawLine(3,n,6,n,p);c.drawLine(18,n,21,n,p);}break;
                 case "play":c.drawCircle(12,12,9,p);path.moveTo(10.2f,8.6f);path.lineTo(15.4f,12);path.lineTo(10.2f,15.4f);path.close();c.drawPath(path,p);break;
                 case "music":path.moveTo(9,17.5f);path.lineTo(9,5.5f);path.lineTo(19,3.8f);path.lineTo(19,15.5f);c.drawPath(path,p);c.drawCircle(6.6f,17.5f,2.4f,p);c.drawCircle(16.6f,15.5f,2.4f,p);break;
                 case "timer":c.drawCircle(12,13.5f,7.5f,p);c.drawLine(12,13.5f,12,9.5f,p);c.drawLine(9.5f,3,14.5f,3,p);c.drawLine(18.2f,7.2f,19.6f,5.8f,p);break;

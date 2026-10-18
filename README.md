@@ -1,12 +1,9 @@
 # DuoBuddy
 
-The project source lives in [`outputs/tv-companion`](outputs/tv-companion), including the Node controller, setup page, Android app and tests.
+A standalone Android TV assistant with local speech, timers, memory, and a choice of AI providers. Install the APK and add your own API key. No Mac or computer is required to run it.
 
-Double-click `Start DuoBuddy.command` to run the controller from this folder. Open the local setup link it prints.
+[Download the TV APK](https://github.com/eonurk/DuoBuddy/releases) · [Install and setup](outputs/tv-companion/README.md)
 
-See the [project documentation](outputs/tv-companion/README.md) for TV connection, pairing, building and verification.
+Supports OpenAI GPT-6 Luna and Google Gemini 3.1 Flash-Lite, plus custom model IDs. AI replies need internet access and a provider account. Speech synthesis runs on the TV using bundled sherpa-onnx / Piper.
 
-For a shareable Mac app with Node, ADB and the TV app bundled, see [Mac distribution](packaging/macos/README.md). Tester builds use fresh per-user settings. TV app v0.7 bundles Piper Amy and generates speech on the TV; older TV apps retain the Mac voice fallback.
-
-The `work` directory contains local SDKs, build products, backups and private runtime settings. It is excluded from Git. The original workspace is preserved at `/Users/onur-lumc/Documents/Codex/2026-10-17/the-x20.backup-before-desktop-move`. Its former path now points here so existing sessions use the same source files.
-
+Source, build scripts, Android app and tests live in [`outputs/tv-companion`](outputs/tv-companion). Older controller and Mac packaging sources remain for reference and are not required by the standalone APK. Private runtime settings, SDKs and build products live in the ignored `work` directory.

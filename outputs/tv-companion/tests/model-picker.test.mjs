@@ -53,10 +53,16 @@ globalThis.fetch=async (url,options)=>{
     assert.fail(output);
   };
   const call = async (path, data) => {const res = await fetch('http://127.0.0.1:' + admin + path, {method: data === undefined ? 'GET' : 'POST', headers: {'X-Setup-Token': adminToken, 'Content-Type': 'application/json'}, body: data === undefined ? undefined : JSON.stringify(data)}); return {status: res.status, data: await res.json()};};
+  const tvCall = async (path, data) => {const res = await fetch('http://127.0.0.1:' + tvPort + path, {method: data === undefined ? 'GET' : 'POST', headers: {Authorization: 'Bearer ' + token, 'X-Buddy-Version': '10', 'Content-Type': 'application/json'}, body: data === undefined ? undefined : JSON.stringify(data)}); return {status: res.status, data: await res.json()};};
   await launch();
   const choices = (await call('/admin/models')).data;
   assert.equal(choices.provider, 'openai'); assert.equal(choices.providers[0].savedKey, true);
   assert.equal(JSON.stringify(choices).includes(openaiKey), false);
+  assert.equal((await fetch('http://127.0.0.1:' + tvPort + '/api/models')).status, 401);
+  assert.equal((await tvCall('/api/models')).data.provider, 'openai');
+  const missingKey = await tvCall('/api/model', {provider: 'gemini', model: 'gemini-3.1-flash-lite'});
+  assert.equal(missingKey.status, 400); assert.match(missingKey.data.error, /API key/);
+  assert.equal((await call('/admin/state')).data.provider, 'openai');
   assert.equal((await call('/admin/configure', {provider: 'gemini', model: 'gemini-3.1-flash-lite', apiKey: geminiKey})).status, 200);
   assert.equal((await call('/admin/state')).data.provider, 'gemini');
   assert.equal((await call('/admin/state')).data.webSearchAvailable, false);
@@ -70,6 +76,10 @@ globalThis.fetch=async (url,options)=>{
   assert.equal(await readFile(join(runtime, 'credentials.json'), 'utf8'), saved);
   assert.equal((await call('/admin/configure', {provider: 'openai', model: 'gpt-6-luna', apiKey: ''})).status, 200);
   assert.equal((await call('/admin/configure', {provider: 'gemini', model: 'gemini-3.1-flash-lite', apiKey: ''})).status, 200);
+  assert.equal((await tvCall('/api/model', {provider: 'openai', model: 'gpt-6-luna', apiKey: 'must-not-replace-the-saved-key'})).status, 200);
+  assert.equal((await tvCall('/api/model', {provider: 'gemini', model: 'unlisted-model'})).status, 400);
+  assert.equal((await tvCall('/api/model', {provider: 'gemini', model: 'gemini-3.1-flash-lite'})).status, 200);
+  assert.equal(JSON.parse(await readFile(join(runtime, 'credentials.json'))).accounts.openai.apiKey, openaiKey);
   assert.equal((await stat(join(runtime, 'credentials.json'))).mode & 0o777, 0o600);
   const publicData = JSON.stringify([(await call('/admin/state')).data, (await call('/admin/models')).data]);
   assert.equal(publicData.includes(openaiKey) || publicData.includes(geminiKey), false);
