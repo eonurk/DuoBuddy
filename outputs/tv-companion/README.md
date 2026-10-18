@@ -4,7 +4,7 @@ DuoBuddy runs on the TV. Install the APK, choose **Model**, and connect your own
 
 ## Install and connect
 
-1. Download **DuoBuddy-TV-1.0.0-beta.1.apk** from [GitHub Releases](https://github.com/eonurk/DuoBuddy/releases). Sideload it on an ARM Android TV / Google TV running Android 8 or later. Allow installation from your chosen installer if Android asks.
+1. Download **DuoBuddy-TV.apk** from the latest [GitHub Release](https://github.com/eonurk/DuoBuddy/releases). Sideload it on an ARM Android TV / Google TV running Android 8 or later. Allow installation from your chosen installer if Android asks.
 2. Open DuoBuddy and choose **Model**. Pick **OpenAI · GPT-6 Luna** or **Google · Gemini 3.1 Flash-Lite**, then **Set up on phone**.
 3. Connect your phone to the TV’s Wi-Fi, scan the TV’s QR code, and paste your provider API key. The TV hosts a temporary HTTPS page. Its certificate is local and self-signed: compare the certificate’s SHA-256 fingerprint with the TV before trusting it. You can also choose **Enter key on TV**.
 4. Confirm **Save & connect** on the TV. After setup, close the phone page and choose **Done**. Your phone is no longer needed.
