@@ -18,7 +18,7 @@ async function mark(size, radius) {
   const mask = svg(size, size, `<rect width="${size}" height="${size}" rx="${radius}" fill="white"/>`);
   return sharp(logo).resize(size, size, {fit: 'contain'}).composite([{input: mask, blend: 'dest-in'}]).png().toBuffer();
 }
-async function text(value, size, color, bold = false) {
+async function text(value, size, color, bold = false, extra = 0) {
   // Outline the bundled Quicksand glyphs so no system-font fallback can change the wordmark.
   const font = typeface.getVariation({wght: bold ? 700 : 500});
   const run = font.layout(value), scale = size / font.unitsPerEm;
@@ -29,8 +29,10 @@ async function text(value, size, color, bold = false) {
     cursor += position.xAdvance;
     return path;
   }).join('');
-  return sharp(svg(Math.ceil(cursor * scale) + 4, Math.ceil((font.ascent - font.descent) * scale) + 4,
-    `<g fill="${color}" transform="translate(2 ${2 + font.ascent * scale}) scale(${scale} ${-scale})">${paths}</g>`)).png().toBuffer();
+  // Quicksand stops at 700, so `extra` thickens strokes further with a same-colour outline (in pixels).
+  const pad = 2 + extra, outline = extra ? ` stroke="${color}" stroke-width="${extra * 2 / scale}" stroke-linejoin="round"` : '';
+  return sharp(svg(Math.ceil(cursor * scale) + pad * 2, Math.ceil((font.ascent - font.descent) * scale) + pad * 2,
+    `<g fill="${color}"${outline} transform="translate(${pad} ${pad + font.ascent * scale}) scale(${scale} ${-scale})">${paths}</g>`)).png().toBuffer();
 }
 
 // A square launcher icon with space around the original mark.
@@ -39,13 +41,18 @@ const icon = await sharp(svg(384, 384, '<rect x="1" y="1" width="382" height="38
   .png().toBuffer();
 await sharp(icon).resize(192, 192).png().toFile(resolve(target, 'duobuddy_app_icon.png'));
 
+// A full-bleed tile like Netflix or Spotify: mark and wordmark centred on white, no tagline.
 // Compose at twice the TV banner size to keep the wordmark crisp at 320 × 180.
-const name = await text('DuoBuddy', 60, '#1e293b', true);
-const subtitle = await text('Your little TV companion', 25, '#64748b');
-const banner = await sharp(svg(640, 360, '<rect width="640" height="360" fill="#fffaf5"/><rect x="1" y="1" width="638" height="358" rx="22" fill="none" stroke="#ffedd5" stroke-width="2"/>'))
-  .composite([{input: await mark(176, 40), left: 40, top: 92}, {input: name, left: 248, top: 132}, {input: subtitle, left: 250, top: 214}])
+const name = await text('Buddy', 128, '#000000', true, 1.2);
+const {width: nameWidth, height: nameHeight} = await sharp(name).metadata();
+const markSize = 140, gap = 26, left = Math.round((640 - markSize - gap - nameWidth) / 2);
+const banner = await sharp(svg(640, 360, '<rect width="640" height="360" fill="#ffffff"/>'))
+  .composite([
+    {input: await mark(markSize, 32), left, top: Math.round((360 - markSize) / 2)},
+    {input: name, left: left + markSize + gap, top: Math.round((360 - nameHeight) / 2) + 2},
+  ])
   .png().toBuffer();
 await sharp(banner).resize(320, 180).png().toFile(resolve(target, 'duobuddy_tv_banner.png'));
 
 for (const name of ['duobuddy_app_icon.png', 'duobuddy_tv_banner.png']) await copyFile(resolve(target, name), resolve(preview, name));
-console.log('Created DuoBuddy launcher icon and named TV banner.');
+console.log('Created Buddy launcher icon and TV banner.');
